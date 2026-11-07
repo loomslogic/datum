@@ -1,7 +1,7 @@
 // 1) Create a free Firebase project (see README.md), 2) paste your web app config below.
 export const firebaseConfig = {
   apiKey: 'sb_publishable_9L0C25-K6bmQEcxp4_JPXg_eSY3-T_D',
-  authDomain: 'YOUR_PROJECT.firebaseapp.com',
+  authDomain: 'YOUR_PROJECT.supabase.com',
   projectId: 'YOUR_PROJECT',
   appId: 'YOUR_APP_ID'
 };
