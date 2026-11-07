@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0b0d">
+<title>Dashboard | Digital Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dashbody">
+<div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
+
+<!-- LOADING / SETUP -->
+<main class="auth" id="loading"><div class="panel authbox"><div class="brand">DATUM</div><p class="sub">Loading...</p></div></main>
+<main class="auth" id="setup" hidden>
+  <div class="panel authbox">
+    <div class="brand">Setup needed</div>
+    <p class="sub">Open <b>supabase-config.js</b> and paste your Supabase project settings. Step-by-step instructions are in <b>README.md</b>.</p>
+  </div>
+</main>
+
+<!-- LOGIN / SIGN UP -->
+<main class="auth" id="auth" hidden>
+  <div class="panel authbox">
+    <div class="brand">DATUM</div>
+    <p class="sub">Create your digital card. Sign up, then only you can edit your profile.</p>
+    <div class="seg" id="authTabs">
+      <button class="on" data-m="login">Log in</button>
+      <button data-m="register">Create account</button>
+    </div>
+    <label class="f"><span>Email</span><input id="aEmail" type="email" autocomplete="email" autocapitalize="none" placeholder="you@example.com"></label>
+    <label class="f" id="aUserWrap" hidden><span>Choose your User ID</span><input id="aId" autocomplete="username" autocapitalize="none" placeholder="e.g. rj"></label>
+    <label class="f"><span>Password</span><input id="aPw" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+    <div class="err" id="aErr"></div>
+    <button class="btn" id="aGo">Log in</button>
+    <button class="linkbtn" id="aForgot" type="button">Forgot password?</button>
+    <p class="hint" id="aHint" hidden>Your card link will be <b>index.html?u=<span id="aPrev">yourid</span></b></p>
+  </div>
+</main>
+
+<!-- CHOOSE USER ID (signed in but no card yet) -->
+<main class="auth" id="claim" hidden>
+  <div class="panel authbox">
+    <div class="brand">Pick your User ID</div>
+    <p class="sub">This becomes your card link. It can't be changed later.</p>
+    <label class="f"><span>User ID</span><input id="cId" autocapitalize="none" placeholder="e.g. rj"></label>
+    <div class="err" id="cErr"></div>
+    <button class="btn" id="cGo">Create my card</button>
+    <button class="linkbtn" id="cOut" type="button">Log out</button>
+  </div>
+</main>
+
+<!-- EDITOR -->
+<div class="dash" id="editor" hidden>
+  <header class="topbar panel">
+    <div><b id="who">@id</b><small>Dashboard</small></div>
+    <div class="topbtns">
+      <button class="mini" id="togglePrev">Preview</button>
+      <a class="mini" id="viewLive" target="_blank" rel="noopener">View card</a>
+      <button class="mini" id="logout">Log out</button>
+    </div>
+  </header>
+
+  <div class="cols">
+    <section class="edit panel" id="editPane">
+      <nav class="tabs" id="tabs">
+        <button data-t="profile" class="on">Profile</button>
+        <button data-t="photos">Photos</button>
+        <button data-t="links">Links</button>
+        <button data-t="resume">Resume</button>
+        <button data-t="design">Design</button>
+        <button data-t="share">Share</button>
+      </nav>
+      <div id="tabBody"></div>
+      <div class="saved" id="saved">All changes saved</div>
+    </section>
+
+    <aside class="prev" id="prevPane">
+      <div class="phone"><iframe id="frame" title="Live preview"></iframe></div>
+    </aside>
+  </div>
+</div>
+
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>
