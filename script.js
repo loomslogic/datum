@@ -185,16 +185,20 @@ function reveal() {
   els.forEach(function (el, i) { el.classList.add('reveal'); el.style.setProperty('--d', (i % 6) * 50 + 'ms'); io.observe(el); });
 }
 
-function message(title, text, btn) {
+function message(title, text, btn, logoOnly) {
   document.title = title;
-  app.innerHTML = '<div class="notfound"><img class="logo" src="images/logo.png" alt="DATUM" style="width:200px" onerror="this.remove()"><h1>' + esc(title) + '</h1><p>' + esc(text) + '</p>' +
+  // logoOnly: show the logo instead of the title text (title text returns only if the logo file is missing)
+  var logo = logoOnly
+    ? '<img class="logo" src="images/logo.png" alt="' + esc(title) + '" style="width:220px" onerror="this.remove();var h=document.getElementById(\'mt\');if(h)h.hidden=false">'
+    : '';
+  app.innerHTML = '<div class="notfound">' + logo + '<h1 id="mt"' + (logoOnly ? ' hidden' : '') + '>' + esc(title) + '</h1><p>' + esc(text) + '</p>' +
     (btn ? '<a class="btn" href="dashboard.html">' + esc(btn) + '</a>' : '') + '</div>';
 }
 
 async function load() {
   if (params.get('preview') === '1') return; // dashboard preview: wait for the card via postMessage
   if (!Store.configured) return message('Not set up yet', 'Add your Supabase settings in supabase-config.js (see README.md).', 'Open dashboard');
-  if (!id) return message('DATUM Digital Cards', 'Create your own digital business card and share it with one link.', 'Create your card');
+  if (!id) return message('DATUM Digital Cards', 'Create your own digital business card and share it with one link.', 'Create your card', true);
   app.innerHTML = '<div class="notfound"><p>Loading...</p></div>';
   try {
     var c = await Store.getCard(id);
