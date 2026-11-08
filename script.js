@@ -46,7 +46,7 @@ function initials(n) {
   return String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
 }
 
-var LOGO = '<img class="logo footlogo" src="logo.png" alt="DATUM" onerror="this.remove()">';
+var LOGO = '<img class="logo footlogo" src="logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode(\'DATUM\'))">';
 var rendered = false;
 
 // shrink long words so they always fit the card width (120px for up to 6 letters)
@@ -124,7 +124,7 @@ function render(c) {
       return '<a class="link" href="' + esc(safeUrl(l.url)) + '" target="_blank" rel="noopener"><div class="ic">' + (ICONS[l.type] || ICONS.website) + '</div><div><b>' + esc(l.label) + '</b><small>' + esc(l.sub) + '</small></div></a>';
     }).join('') + '</div>';
   }
-  h += '</section><footer>' + LOGO + '&copy; ' + new Date().getFullYear() + ' ' + esc(c.name) + '</footer>';
+  h += '</section><footer>&copy; ' + new Date().getFullYear() + ' ' + LOGO + '</footer>';
   app.innerHTML = h;
   if (rendered) window.scrollTo(0, keepY);
   rendered = true;
