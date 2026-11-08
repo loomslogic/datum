@@ -46,7 +46,7 @@ function initials(n) {
   return String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
 }
 
-var LOGO = '<img class="logo footlogo" src="images/logo.png" alt="DATUM" onerror="this.remove()">';
+var LOGO = '<img class="logo footlogo" src="logo.png" alt="DATUM" onerror="this.remove()">';
 var rendered = false;
 
 // shrink long words so they always fit the card width (120px for up to 6 letters)
@@ -189,7 +189,7 @@ function message(title, text, btn, logoOnly) {
   document.title = title;
   // logoOnly: show the logo instead of the title text (title text returns only if the logo file is missing)
   var logo = logoOnly
-    ? '<img class="logo" src="images/logo.png" alt="' + esc(title) + '" style="width:220px" onerror="this.remove();var h=document.getElementById(\'mt\');if(h)h.hidden=false">'
+    ? '<img class="logo" src="logo.png" alt="' + esc(title) + '" style="width:220px" onerror="this.remove();var h=document.getElementById(\'mt\');if(h)h.hidden=false">'
     : '';
   app.innerHTML = '<div class="notfound">' + logo + '<h1 id="mt"' + (logoOnly ? ' hidden' : '') + '>' + esc(title) + '</h1><p>' + esc(text) + '</p>' +
     (btn ? '<a class="btn" href="dashboard.html">' + esc(btn) + '</a>' : '') + '</div>';
