@@ -207,7 +207,7 @@ footer{text-align:center;padding:30px 20px 40px;font-size:12px;color:var(--muted
 .static .bigword{opacity:.85}
 
 .logo{display:block;height:auto;max-width:100%}
-.footlogo{height:22px;width:auto;opacity:.55;margin:0 auto 12px}
+.footlogo{display:inline-block;height:13px;width:auto;max-width:none;vertical-align:-1px;margin:0 0 0 4px;opacity:.75}
 
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .head,.detail,.item,.link,.btn,.skill{background:rgba(40,40,46,.92)}
