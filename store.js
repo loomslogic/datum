@@ -18,9 +18,9 @@ const FONTS = ['Outfit', 'Inter', 'Poppins', 'Space Grotesk', 'Playfair Display'
 function blankCard(ownerUid) {
   return {
     ownerUid: ownerUid, name: 'Your Name', role: 'Your title | Your role', bio: 'Write a short intro about yourself here.',
-    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', galleryIds: [],
-    experience: [], education: [], skills: [], links: [],
-    design: { theme: 'graphite', accent: '#ffffff', font: 'Outfit', blur: 22, bigword: true, bigwordText: 'HELLO' }
+    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', bgId: '', galleryIds: [],
+    experience: [], education: [], skills: [], links: [], wallets: [],
+    design: { theme: 'graphite', accent: '#ffffff', font: 'Outfit', blur: 22, bigword: true, bigwordText: 'HELLO', bgColor: '', bgDim: 35, bgBlur: 0 }
   };
 }
 function seedCard(ownerUid) {
@@ -51,6 +51,14 @@ function seedCard(ownerUid) {
   });
 }
 
+// mix a #rrggbb colour toward white by amt (0-1)
+function lighten(hex, amt) {
+  var n = parseInt(hex.slice(1), 16), out = '#';
+  [n >> 16 & 255, n >> 8 & 255, n & 255].forEach(function (v) {
+    out += ('0' + Math.round(v + (255 - v) * amt).toString(16)).slice(-2);
+  });
+  return out;
+}
 function cleanId(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24); }
 function friendly(e) {
   var m = String((e && e.message) || ''), c = (e && e.code) || '';
@@ -78,7 +86,7 @@ async function loadCard(name) {
   if (!r.data) return null;
   var c = Object.assign(blankCard(''), r.data.data);
   c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.photos = {};
-  var ids = [c.avatarId].concat(c.galleryIds || []).filter(Boolean);
+  var ids = [c.avatarId, c.bgId].concat(c.galleryIds || [], (c.wallets || []).map(function (w) { return w && w.qrId; })).filter(Boolean);
   if (ids.length) {
     var p = await sb.from('photos').select('id, data').in('id', ids);
     if (p.error) throw p.error;
@@ -151,6 +159,45 @@ export const Store = {
   },
   logout: function () { return sb.auth.signOut(); },
 
+  // ---- account settings (signed-in user) ----
+  userEmail: function () { return currentUser ? currentUser.email : ''; },
+
+  // Change the password. The current password is checked first.
+  changePassword: async function (current, next) {
+    try {
+      if (!currentUser || !currentUser.email) return { ok: false, error: 'Please log in first.' };
+      if (!current) return { ok: false, error: 'Enter your current password.' };
+      if (!next || next.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+      var chk = await sb.auth.signInWithPassword({ email: currentUser.email, password: current });
+      if (chk.error) return { ok: false, error: 'Your current password is wrong.' };
+      var r = await sb.auth.updateUser({ password: next });
+      return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  // Change the login email. Supabase sends a confirmation link to the new address.
+  changeEmail: async function (email) {
+    try {
+      email = String(email || '').trim();
+      if (!email) return { ok: false, error: 'Enter the new email address.' };
+      var r = await sb.auth.updateUser({ email: email }, { emailRedirectTo: location.origin + location.pathname });
+      return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  // Change the User ID (card link). Needs the rename_card() function from schema_update.sql.
+  changeUserId: async function (rawName) {
+    try {
+      var name = cleanId(rawName);
+      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
+      var r = await sb.rpc('rename_card', { new_name: name });
+      if (r.error) {
+        if (/rename_card/i.test(r.error.message || '') && /not find|does not exist|schema cache/i.test(r.error.message || ''))
+          return { ok: false, error: 'Run schema_update.sql in Supabase first (see README).' };
+        return { ok: false, error: friendly(r.error) };
+      }
+      return { ok: true, id: name };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+
   // Public read
   getCard: function (name) { return loadCard(cleanId(name)); },
   // The signed-in user's own card (null if they have not claimed a User ID yet)
@@ -179,20 +226,22 @@ export const Store = {
   applyDesign: function (d) {
     d = d || {};
     var t = THEMES[d.theme] || THEMES.graphite, r = document.documentElement.style;
-    r.setProperty('--bg', t.bg); r.setProperty('--top', t.top);
+    var bg = t.bg, top = t.top;
+    if (/^#[0-9a-f]{6}$/i.test(d.bgColor || '')) { bg = d.bgColor; top = lighten(d.bgColor, 0.14); }
+    r.setProperty('--bg', bg); r.setProperty('--top', top);
     r.setProperty('--o1', t.o1); r.setProperty('--o2', t.o2); r.setProperty('--o3', t.o3);
     r.setProperty('--accent', d.accent || '#ffffff');
     r.setProperty('--blur', 'blur(' + (d.blur == null ? 22 : d.blur) + 'px) saturate(160%)');
     r.setProperty('--font', "'" + (d.font || 'Outfit') + "'");
   },
   // resize + compress an image file to a data URL that fits Firestore's 1MB document limit
-  fileToDataURL: function (file, max) {
+  fileToDataURL: function (file, max, startQ) {
     return new Promise(function (res, rej) {
       var fr = new FileReader(); fr.onerror = rej;
       fr.onload = function () {
         var img = new Image(); img.onerror = rej;
         img.onload = function () {
-          var size = max || 800, q = 0.8, out;
+          var size = max || 800, q = startQ || 0.8, out;
           for (var i = 0; i < 6; i++) {
             var s = Math.min(1, size / Math.max(img.width, img.height));
             var c = document.createElement('canvas');

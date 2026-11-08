@@ -15,6 +15,16 @@
 <div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
 <main class="wrap" id="app"></main>
 <div class="lightbox" id="lb" hidden><img alt=""></div>
+<div class="lightbox wmodal" id="wm" hidden>
+  <div class="wbox" role="dialog" aria-modal="true" aria-labelledby="wmTitle">
+    <button class="wclose" id="wmClose" aria-label="Close">&times;</button>
+    <div class="wtitle" id="wmTitle"></div>
+    <div class="wqr" id="wmQr"></div>
+    <div class="wname" id="wmName"></div>
+    <div class="wnum" id="wmNum"></div>
+    <button class="btn" id="wmCopy" type="button">Copy number</button>
+  </div>
+</div>
 
 <script type="module" src="script.js"></script>
 </body>

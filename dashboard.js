@@ -118,6 +118,8 @@ $('#tabs').addEventListener('click', function (e) {
 
 var LINK_TYPES = ['facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'messenger', 'telegram', 'whatsapp', 'viber', 'map', 'github', 'portfolio', 'website', 'other'];
 var MAX_GALLERY = 12;
+var WALLET_TYPES = { gcash: 'GCash', maya: 'Maya', gotyme: 'GoTyme', coins: 'Coins.ph', paypal: 'PayPal', bank: 'Bank transfer', other: 'Other' };
+var MAX_WALLETS = 8;
 
 function rows(listName, fields, addLabel) {
   var arr = card[listName] || [];
@@ -152,19 +154,45 @@ function renderTab() {
         '<div class="row2">' + field('Label', 'links.' + i + '.label') + field('Subtext', 'links.' + i + '.sub') + '</div>' +
         field('URL', 'links.' + i + '.url', { ph: 'https://...' }) + '</div>';
     }).join('') + '<button class="mini" data-act="add" data-list="links">+ Add link</button>';
+  } else if (tab === 'wallets') {
+    h += '<p class="note">Visitors tap a wallet on your card to see the QR code and account number. Only add details you are happy to make public.</p>' +
+      (card.wallets || []).map(function (w, i) {
+        var qr = ph[w.qrId];
+        return '<div class="card"><h4>#' + (i + 1) + ' <button class="mini danger" data-act="del" data-list="wallets" data-i="' + i + '">Remove</button></h4>' +
+          '<label class="f"><span>Wallet</span><select data-path="wallets.' + i + '.type">' + Object.keys(WALLET_TYPES).map(function (k) { return '<option value="' + k + '"' + (w.type === k ? ' selected' : '') + '>' + WALLET_TYPES[k] + '</option>'; }).join('') + '</select></label>' +
+          field('Label shown on card', 'wallets.' + i + '.label') +
+          field('Account name', 'wallets.' + i + '.name') +
+          field('Account / mobile number', 'wallets.' + i + '.number', { type: 'text' }) +
+          '<span class="h" style="margin:0">QR code</span>' +
+          (qr ? '<div class="thumbs"><div class="thumb" style="background:#fff;max-width:160px"><img src="' + esc(qr) + '" alt="" style="object-fit:contain"></div></div>' : '<p class="note">No QR code yet.</p>') +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="mini upl">' + (qr ? 'Change QR' : 'Upload QR') + '<input type="file" accept="image/*" data-qr="' + i + '"></label>' +
+          (qr ? '<button class="mini danger" data-act="rmqr" data-i="' + i + '">Remove QR</button>' : '') + '</div></div>';
+      }).join('') +
+      ((card.wallets || []).length < MAX_WALLETS ? '<button class="mini" data-act="add" data-list="wallets">+ Add e-wallet</button>' : '<p class="note">Maximum of ' + MAX_WALLETS + ' wallets.</p>');
   } else if (tab === 'resume') {
     h += '<div class="h">Experience</div>' + rows('experience', [['Title', 'title'], ['Description', 'desc', true], ['When', 'when']], 'Add experience') +
       '<div class="h">Education</div>' + rows('education', [['School', 'title'], ['Details', 'desc', true], ['When', 'when']], 'Add education') +
       '<div class="h">Skills</div>' + field('Skills (comma separated)', 'skills', { area: true, list: true });
   } else if (tab === 'design') {
-    var d = card.design, T = Store.THEMES;
+    var d = card.design, T = Store.THEMES, bg = ph[card.bgId];
     h += '<div class="h">Theme</div><div class="themes">' + Object.keys(T).map(function (k) {
       return '<button class="theme' + (d.theme === k ? ' on' : '') + '" data-act="theme" data-k="' + k + '"><i style="background:linear-gradient(135deg,' + T[k].o1 + ',' + T[k].bg + ')"></i>' + T[k].label + '</button>';
     }).join('') + '</div>' +
       '<div class="row2"><label class="f"><span>Accent colour</span><input type="color" data-path="design.accent" value="' + esc(d.accent) + '"></label>' +
       '<label class="f"><span>Font</span><select data-path="design.font">' + Store.FONTS.map(function (f) { return '<option' + (d.font === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label></div>' +
-      '<label class="f"><span>Glass blur (' + d.blur + 'px)</span><input type="range" min="0" max="40" data-path="design.blur" data-num="1" value="' + d.blur + '"></label>' +
-      check('Show big background word', 'design.bigword') + field('Big word', 'design.bigwordText');
+      '<label class="f"><span>Glass blur (' + d.blur + 'px)</span><input type="range" min="0" max="40" data-path="design.blur" data-num="1" data-label="Glass blur ({v}px)" value="' + d.blur + '"></label>' +
+      check('Show big background word', 'design.bigword') + field('Big word', 'design.bigwordText') +
+      '<div class="h">Background</div>' +
+      '<div class="card"><h4>Colour</h4><div class="row2">' +
+      '<label class="f"><span>Background colour</span><input type="color" data-path="design.bgColor" value="' + esc(d.bgColor || T[d.theme].bg) + '"></label>' +
+      '<div class="f"><span>&nbsp;</span><button class="mini" data-act="bgcolor">Use theme colour</button></div></div></div>' +
+      '<div class="card"><h4>Picture</h4>' +
+      (bg ? '<div class="thumbs"><div class="thumb" style="aspect-ratio:16/10;grid-column:1/-1"><img src="' + esc(bg) + '" alt=""></div></div>' : '<p class="note">No background picture yet.</p>') +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="mini upl">' + (bg ? 'Change picture' : 'Upload picture') + '<input type="file" accept="image/*" id="upBg"></label>' +
+      (bg ? '<button class="mini danger" data-act="rmbg">Remove</button>' : '') + '</div>' +
+      (bg ? '<label class="f"><span>Darken (' + (d.bgDim == null ? 35 : d.bgDim) + '%)</span><input type="range" min="0" max="80" data-path="design.bgDim" data-num="1" data-label="Darken ({v}%)" value="' + (d.bgDim == null ? 35 : d.bgDim) + '"></label>' +
+        '<label class="f"><span>Blur (' + (d.bgBlur || 0) + 'px)</span><input type="range" min="0" max="20" data-path="design.bgBlur" data-num="1" data-label="Blur ({v}px)" value="' + (d.bgBlur || 0) + '"></label>' : '') +
+      '<p class="note">Tip: a darker, slightly blurred picture keeps the text easy to read.</p></div>';
   } else if (tab === 'share') {
     var url = new URL('index.html?u=' + username, location.href).href;
     h += '<div class="card"><h4>Your public card link</h4><input id="shareUrl" readonly value="' + esc(url) + '">' +
@@ -173,6 +201,22 @@ function renderTab() {
       '<div class="card"><h4>Backup</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export">Download backup (.json)</button>' +
       '<label class="mini upl">Restore backup<input type="file" accept="application/json" id="upImp"></label></div>' +
       '<p class="note">Backups contain your text and design, not photos.</p></div>';
+  } else if (tab === 'account') {
+    h += '<div class="card"><h4>Display name</h4>' + field('Full name shown on your card', 'name') + '</div>' +
+      '<div class="card"><h4>User ID (card link)</h4>' +
+      '<label class="f"><span>User ID</span><input id="acId" autocapitalize="none" autocomplete="off" value="' + esc(username) + '"></label>' +
+      '<p class="note">3-24 letters, numbers, - or _. Your old link stops working after you change it, so share the new one.</p>' +
+      '<button class="mini" data-act="chid">Change User ID</button><div class="err" id="msgId"></div></div>' +
+      '<div class="card"><h4>Login email</h4>' +
+      '<p class="note">Current: <b>' + esc(Store.userEmail()) + '</b></p>' +
+      '<label class="f"><span>New email</span><input id="acEmail" type="email" autocapitalize="none" autocomplete="email" placeholder="new@example.com"></label>' +
+      '<p class="note">We email a confirmation link. The change applies after you open it.</p>' +
+      '<button class="mini" data-act="chmail">Change email</button><div class="err" id="msgMail"></div></div>' +
+      '<div class="card"><h4>Password</h4>' +
+      '<label class="f"><span>Current password</span><input id="acPw0" type="password" autocomplete="current-password"></label>' +
+      '<label class="f"><span>New password</span><input id="acPw1" type="password" autocomplete="new-password" placeholder="min. 6 characters"></label>' +
+      '<label class="f"><span>Repeat new password</span><input id="acPw2" type="password" autocomplete="new-password"></label>' +
+      '<button class="mini" data-act="chpw">Change password</button><div class="err" id="msgPw"></div></div>';
   }
   $('#tabBody').innerHTML = h;
   bindUploads();
@@ -183,8 +227,14 @@ $('#tabBody').addEventListener('input', function (e) {
   var el = e.target, p = el.dataset.path; if (!p) return;
   var v = el.type === 'checkbox' ? el.checked : el.value;
   if (el.dataset.list) v = v.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
-  if (el.dataset.num) { v = +v; el.closest('label').firstChild.textContent = 'Glass blur (' + v + 'px)'; }
+  if (el.dataset.num) { v = +v; el.closest('label').firstChild.textContent = el.dataset.label.replace('{v}', v); }
   setPath(card, p, v);
+  var wm = /^wallets\.(\d+)\.type$/.exec(p);
+  if (wm) {
+    var w = card.wallets[+wm[1]], known = Object.keys(WALLET_TYPES).map(function (k) { return WALLET_TYPES[k]; });
+    if (!w.label || known.indexOf(w.label) >= 0) w.label = WALLET_TYPES[v];
+    queueSave(); renderTab(); return;
+  }
   if (p.indexOf('design.') === 0) Store.applyDesign(card.design);
   queueSave();
 });
@@ -193,27 +243,76 @@ $('#tabBody').addEventListener('click', async function (e) {
   var b = e.target.closest('[data-act]'); if (!b) return;
   var act = b.dataset.act, i = +b.dataset.i, L = b.dataset.list;
   if (act === 'add') {
-    var tpl = { links: { type: 'website', label: 'New link', sub: '', url: '' }, experience: { title: '', desc: '', when: '' }, education: { title: '', desc: '', when: '' } };
+    var tpl = { links: { type: 'website', label: 'New link', sub: '', url: '' }, experience: { title: '', desc: '', when: '' }, education: { title: '', desc: '', when: '' }, wallets: { type: 'gcash', label: 'GCash', name: '', number: '', qrId: '' } };
     card[L] = card[L] || []; card[L].push(tpl[L]); queueSave(); renderTab();
-  } else if (act === 'del') { card[L].splice(i, 1); queueSave(); renderTab(); }
+  } else if (act === 'del') {
+    var gone = card[L].splice(i, 1)[0]; queueSave(); renderTab();
+    if (L === 'wallets' && gone && gone.qrId) Store.deletePhoto(username, gone.qrId);
+  }
+  else if (act === 'rmqr') { var wq = card.wallets[i], oq = wq.qrId; wq.qrId = ''; queueSave(); renderTab(); if (oq) await Store.deletePhoto(username, oq); }
   else if (act === 'theme') { card.design.theme = b.dataset.k; Store.applyDesign(card.design); queueSave(); renderTab(); }
   else if (act === 'rmav') { var old = card.avatarId; card.avatarId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, old); }
   else if (act === 'rmg') { var gid = card.galleryIds.splice(i, 1)[0]; queueSave(); renderTab(); await Store.deletePhoto(username, gid); }
+  else if (act === 'bgcolor') { card.design.bgColor = ''; Store.applyDesign(card.design); queueSave(); renderTab(); }
+  else if (act === 'rmbg') { var ob = card.bgId; card.bgId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, ob); }
+  else if (act === 'chid') { await changeId(b); }
+  else if (act === 'chmail') { await changeMail(b); }
+  else if (act === 'chpw') { await changePw(b); }
   else if (act === 'copy') {
     var inp = $('#shareUrl'); inp.select();
     (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.resolve(document.execCommand('copy'))).then(function () { b.textContent = 'Copied!'; });
   } else if (act === 'export') {
-    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.avatarId; delete copy.galleryIds;
+    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.avatarId; delete copy.bgId; delete copy.galleryIds;
+    copy.wallets = (copy.wallets || []).map(function (w) { return Object.assign({}, w, { qrId: '' }); });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' }));
     a.download = username + '-card-backup.json'; document.body.appendChild(a); a.click(); a.remove();
   }
 });
 
+/* ---------- account settings ---------- */
+function msg(id, text, ok) { var m = $(id); if (!m) return; m.textContent = text; m.style.color = ok ? '#9be7b0' : ''; }
+
+async function changeId(btn) {
+  var name = Store.cleanId($('#acId').value);
+  if (name === username) return msg('#msgId', 'That is already your User ID.');
+  if (!confirm('Change your card link to index.html?u=' + name + ' ?\nThe old link will stop working.')) return;
+  btn.disabled = true; msg('#msgId', 'Saving...', true);
+  clearTimeout(timer); await saving;
+  var s = await Store.saveCard(card); // flush pending edits under the old ID first
+  if (!s.ok) { btn.disabled = false; return msg('#msgId', s.error); }
+  var r = await Store.changeUserId(name);
+  btn.disabled = false;
+  if (!r.ok) return msg('#msgId', r.error);
+  username = r.id; card.id = r.id;
+  $('#who').textContent = '@' + username;
+  $('#viewLive').href = 'index.html?u=' + username;
+  $('#frame').src = 'index.html?u=' + username + '&preview=1';
+  renderTab();
+  msg('#msgId', 'User ID changed to @' + username, true);
+}
+
+async function changeMail(btn) {
+  btn.disabled = true; msg('#msgMail', 'Sending...', true);
+  var r = await Store.changeEmail($('#acEmail').value);
+  btn.disabled = false;
+  msg('#msgMail', r.ok ? 'Check your inbox (old and new address) and open the confirmation link.' : r.error, r.ok);
+}
+
+async function changePw(btn) {
+  var a = $('#acPw0').value, b1 = $('#acPw1').value, b2 = $('#acPw2').value;
+  if (b1 !== b2) return msg('#msgPw', 'The new passwords do not match.');
+  btn.disabled = true; msg('#msgPw', 'Saving...', true);
+  var r = await Store.changePassword(a, b1);
+  btn.disabled = false;
+  if (r.ok) { $('#acPw0').value = $('#acPw1').value = $('#acPw2').value = ''; }
+  msg('#msgPw', r.ok ? 'Password updated.' : r.error, r.ok);
+}
+
 function setSaved(msg, err) { var s = $('#saved'); s.textContent = msg; s.classList.toggle('err', !!err); }
 
 function bindUploads() {
-  var av = $('#upAv'), gal = $('#upGal'), imp = $('#upImp');
+  var av = $('#upAv'), gal = $('#upGal'), imp = $('#upImp'), bgu = $('#upBg');
   if (av) av.onchange = async function () {
     var f = this.files[0]; if (!f) return;
     try {
@@ -225,6 +324,32 @@ function bindUploads() {
       queueSave(); renderTab();
       if (old) Store.deletePhoto(username, old);
     } catch (e) { setSaved('Could not upload that photo.', true); }
+  };
+  document.querySelectorAll('[data-qr]').forEach(function (inp) {
+    inp.onchange = async function () {
+      var f = this.files[0], i = +this.dataset.qr; if (!f) return;
+      try {
+        setSaved('Uploading QR code...');
+        var data = await Store.fileToDataURL(f, 900, 0.95);
+        var id = await Store.addPhoto(username, data);
+        var w = card.wallets[i], old = w.qrId;
+        card.photos[id] = data; w.qrId = id;
+        queueSave(); renderTab();
+        if (old) Store.deletePhoto(username, old);
+      } catch (e) { setSaved('Could not upload that QR code.', true); }
+    };
+  });
+  if (bgu) bgu.onchange = async function () {
+    var f = this.files[0]; if (!f) return;
+    try {
+      setSaved('Uploading background...');
+      var data = await Store.fileToDataURL(f, 1200);
+      var id = await Store.addPhoto(username, data);
+      var old = card.bgId;
+      card.photos[id] = data; card.bgId = id;
+      queueSave(); renderTab();
+      if (old) Store.deletePhoto(username, old);
+    } catch (e) { setSaved('Could not upload that picture.', true); }
   };
   if (gal) gal.onchange = async function () {
     var files = Array.from(this.files);
@@ -246,7 +371,7 @@ function bindUploads() {
     r.onload = function () {
       try {
         var c = JSON.parse(r.result);
-        ['name', 'role', 'bio', 'location', 'chips', 'phone', 'showPhone', 'email', 'experience', 'education', 'skills', 'links', 'design'].forEach(function (k) { if (k in c) card[k] = c[k]; });
+        ['name', 'role', 'bio', 'location', 'chips', 'phone', 'showPhone', 'email', 'experience', 'education', 'skills', 'links', 'wallets', 'design'].forEach(function (k) { if (k in c) card[k] = c[k]; });
         Store.applyDesign(card.design); queueSave(); renderTab();
       } catch (e) { alert('That file is not a valid backup.'); }
     };

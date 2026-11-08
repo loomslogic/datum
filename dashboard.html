@@ -14,7 +14,7 @@
 <div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
 
 <!-- LOADING / SETUP -->
-<main class="auth" id="loading"><div class="panel authbox"><div class="brand">DATUM</div><p class="sub">Loading...</p></div></main>
+<main class="auth" id="loading"><div class="panel authbox"><div class="brand"><img class="brandlogo" src="images/logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode('DATUM'))"></div><p class="sub">Loading...</p></div></main>
 <main class="auth" id="setup" hidden>
   <div class="panel authbox">
     <div class="brand">Setup needed</div>
@@ -25,7 +25,7 @@
 <!-- LOGIN / SIGN UP -->
 <main class="auth" id="auth" hidden>
   <div class="panel authbox">
-    <div class="brand">DATUM</div>
+    <div class="brand"><img class="brandlogo" src="images/logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode('DATUM'))"></div>
     <p class="sub">Create your digital card. Sign up, then only you can edit your profile.</p>
     <div class="seg" id="authTabs">
       <button class="on" data-m="login">Log in</button>
@@ -45,7 +45,7 @@
 <main class="auth" id="claim" hidden>
   <div class="panel authbox">
     <div class="brand">Pick your User ID</div>
-    <p class="sub">This becomes your card link. It can't be changed later.</p>
+    <p class="sub">This becomes your card link. You can change it later in Account settings.</p>
     <label class="f"><span>User ID</span><input id="cId" autocapitalize="none" placeholder="e.g. rj"></label>
     <div class="err" id="cErr"></div>
     <button class="btn" id="cGo">Create my card</button>
@@ -71,8 +71,10 @@
         <button data-t="photos">Photos</button>
         <button data-t="links">Links</button>
         <button data-t="resume">Resume</button>
+        <button data-t="wallets">E-Wallets</button>
         <button data-t="design">Design</button>
         <button data-t="share">Share</button>
+        <button data-t="account">Account</button>
       </nav>
       <div id="tabBody"></div>
       <div class="saved" id="saved">All changes saved</div>

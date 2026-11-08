@@ -39,21 +39,52 @@ ICONS.github = ICONS.portfolio; ICONS.other = ICONS.website; ICONS.x = ICONS.web
 ICONS.messenger = chatSvg; ICONS.whatsapp = phoneSvg; ICONS.viber = phoneSvg;
 var globeSvg = ICONS.website;
 var mailSvg = '<svg viewBox="0 0 24 24" ' + S + '><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+var walletSvg = '<svg viewBox="0 0 24 24" ' + S + '><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M16 12.5h3.5M2.5 10h15a2 2 0 0 0 0-4h-12"/></svg>';
 var userAdd = '<svg viewBox="0 0 24 24" ' + S + '><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>';
 
 function initials(n) {
   return String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
 }
 
+var LOGO = '<img class="logo footlogo" src="images/logo.png" alt="DATUM" onerror="this.remove()">';
+var rendered = false;
+
+// shrink long words so they always fit the card width (120px for up to 6 letters)
+function bigwordSize(t) {
+  var n = Math.max(String(t || '').length, 1);
+  return n <= 6 ? 120 : Math.max(36, Math.round(720 / n));
+}
+
+// custom background picture (fixed layer behind the card)
+function applyBg(c, ph) {
+  var o = document.querySelector('.orbs'); if (!o) return;
+  var u = safeImg(ph[c.bgId]), d = c.design || {};
+  var el = o.querySelector('.bgimg');
+  document.body.classList.toggle('hasbg', !!u);
+  if (!u) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.className = 'bgimg'; o.insertBefore(el, o.firstChild); }
+  var dim = (d.bgDim == null ? 35 : +d.bgDim) / 100;
+  el.style.backgroundImage = 'linear-gradient(rgba(0,0,0,' + dim + '),rgba(0,0,0,' + dim + ')),url("' + u + '")';
+  el.style.filter = 'blur(' + (+d.bgBlur || 0) + 'px)';
+}
+
+var cur = null;
+
 function render(c) {
+  cur = c;
   var d = c.design || {}, ph = c.photos || {};
   document.title = c.name + ' | Digital Card';
   Store.applyDesign(d);
+  applyBg(c, ph);
+  // after the first paint, re-renders (live preview edits) skip entrance animations
+  document.body.classList.toggle('static', rendered);
+  var keepY = rendered ? window.scrollY : 0;
   var h = '';
   var av = safeImg(ph[c.avatarId]);
+  var isPng = /^data:image\/png/.test(av);
 
-  h += '<header class="hero">' + (d.bigword !== false ? '<div class="bigword">' + esc(d.bigwordText || '') + '</div>' : '') +
-    '<div class="avatar" id="avatar">' + (av ? '<img src="' + esc(av) + '" alt="' + esc(c.name) + '">' : esc(initials(c.name))) + '</div></header>';
+  h += '<header class="hero">' + (d.bigword !== false && d.bigwordText ? '<div class="bigword" style="--bw:' + bigwordSize(d.bigwordText) + 'px">' + esc(d.bigwordText) + '</div>' : '') +
+    '<div class="avatar' + (av && !isPng ? ' round' : '') + '" id="avatar">' + (av ? '<img src="' + esc(av) + '" alt="' + esc(c.name) + '">' : esc(initials(c.name))) + '</div></header>';
 
   h += '<div class="head fade d1"><h1>' + esc(c.name) + '</h1><div class="role">' + esc(c.role) + '</div>' +
     (c.bio ? '<p class="bio">' + esc(c.bio) + '</p>' : '');
@@ -81,21 +112,55 @@ function render(c) {
   if (c.skills && c.skills.length) h += '<div class="label">Skills</div><div class="skills">' + c.skills.map(function (s) { return '<span class="skill">' + esc(s) + '</span>'; }).join('') + '</div>';
   var gal = (c.galleryIds || []).map(function (gid) { return safeImg(ph[gid]); }).filter(Boolean);
   if (gal.length) h += '<div class="label">Gallery</div><div class="gallery">' + gal.map(function (u) { return '<button class="gal" data-src="' + esc(u) + '"><img src="' + esc(u) + '" alt=""></button>'; }).join('') + '</div>';
+  var wl = (c.wallets || []).filter(function (w) { return w && (w.number || w.qrId); });
+  if (wl.length) {
+    h += '<div class="label">E-Wallets &amp; Payments</div><div class="links">' + (c.wallets || []).map(function (w, i) {
+      if (!w || !(w.number || w.qrId)) return '';
+      return '<button type="button" class="link wallet" data-w="' + i + '"><div class="ic">' + walletSvg + '</div><div><b>' + esc(w.label || 'E-Wallet') + '</b><small>' + esc(w.name || 'Tap to pay') + '</small></div></button>';
+    }).join('') + '</div>';
+  }
   if (c.links && c.links.length) {
     h += '<div class="label" id="links">Social Media &amp; Links</div><div class="links">' + c.links.map(function (l) {
       return '<a class="link" href="' + esc(safeUrl(l.url)) + '" target="_blank" rel="noopener"><div class="ic">' + (ICONS[l.type] || ICONS.website) + '</div><div><b>' + esc(l.label) + '</b><small>' + esc(l.sub) + '</small></div></a>';
     }).join('') + '</div>';
   }
-  h += '</section><footer>&copy; ' + new Date().getFullYear() + ' ' + esc(c.name) + '</footer>';
+  h += '</section><footer>' + LOGO + '&copy; ' + new Date().getFullYear() + ' ' + esc(c.name) + '</footer>';
   app.innerHTML = h;
+  if (rendered) window.scrollTo(0, keepY);
+  rendered = true;
 
   var sc = document.getElementById('saveContact');
   if (sc) sc.onclick = function () { saveVcf(c); };
   app.querySelectorAll('.gal').forEach(function (b) {
     b.onclick = function () { var lb = document.getElementById('lb'); lb.querySelector('img').src = b.dataset.src; lb.hidden = false; };
   });
+  app.querySelectorAll('.wallet').forEach(function (b) {
+    b.onclick = function () { openWallet(+b.dataset.w); };
+  });
   reveal();
 }
+
+/* ---------- e-wallet popup ---------- */
+function openWallet(i) {
+  var w = cur && cur.wallets && cur.wallets[i]; if (!w) return;
+  var qr = safeImg(cur.photos && cur.photos[w.qrId]);
+  document.getElementById('wmTitle').textContent = w.label || 'E-Wallet';
+  document.getElementById('wmQr').innerHTML = qr ? '<img src="' + esc(qr) + '" alt="QR code">' : '<div class="noqr">No QR code added</div>';
+  document.getElementById('wmQr').hidden = !qr && !!w.number;
+  document.getElementById('wmName').textContent = w.name || '';
+  document.getElementById('wmNum').textContent = w.number || '';
+  var cp = document.getElementById('wmCopy');
+  cp.hidden = !w.number; cp.textContent = 'Copy number';
+  cp.onclick = function () {
+    var done = function () { cp.textContent = 'Copied!'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(w.number).then(done, done);
+    else { var t = document.createElement('textarea'); t.value = w.number; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); done(); }
+  };
+  document.getElementById('wm').hidden = false;
+}
+document.getElementById('wm').onclick = function (e) { if (e.target === this) this.hidden = true; };
+document.getElementById('wmClose').onclick = function () { document.getElementById('wm').hidden = true; };
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { document.getElementById('wm').hidden = true; document.getElementById('lb').hidden = true; } });
 
 function saveVcf(c) {
   var parts = String(c.name).trim().split(/\s+/), last = parts.length > 1 ? parts.pop() : '', first = parts.join(' ');
@@ -111,6 +176,7 @@ function saveVcf(c) {
 }
 
 function reveal() {
+  if (document.body.classList.contains('static')) return;
   var els = app.querySelectorAll('.label,.item,.skill,.link,.gal,.chip');
   if (!('IntersectionObserver' in window)) return;
   var io = new IntersectionObserver(function (es) {
@@ -121,7 +187,7 @@ function reveal() {
 
 function message(title, text, btn) {
   document.title = title;
-  app.innerHTML = '<div class="notfound"><h1>' + esc(title) + '</h1><p>' + esc(text) + '</p>' +
+  app.innerHTML = '<div class="notfound"><img class="logo" src="images/logo.png" alt="DATUM" style="width:200px" onerror="this.remove()"><h1>' + esc(title) + '</h1><p>' + esc(text) + '</p>' +
     (btn ? '<a class="btn" href="dashboard.html">' + esc(btn) + '</a>' : '') + '</div>';
 }
 
