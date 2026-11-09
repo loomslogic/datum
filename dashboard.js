@@ -9,22 +9,10 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function
 function show(v) { VIEWS.forEach(function (x) { $('#' + x).hidden = x !== v; }); }
 
 /* ---------- AUTH ---------- */
-$('#authTabs').addEventListener('click', function (e) {
-  var b = e.target.closest('button'); if (!b) return;
-  mode = b.dataset.m;
-  this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
-  var reg = mode === 'register';
-  $('#aGo').textContent = reg ? 'Create account' : 'Log in';
-  $('#aUserWrap').hidden = !reg; $('#aHint').hidden = !reg; $('#aForgot').hidden = reg;
-  $('#aPw').autocomplete = reg ? 'new-password' : 'current-password';
-  $('#aErr').textContent = '';
-});
-$('#aId').addEventListener('input', function () { $('#aPrev').textContent = Store.cleanId(this.value) || 'yourid'; });
-
 async function go() {
   var btn = $('#aGo'); btn.disabled = true; $('#aErr').textContent = '';
   var email = $('#aEmail').value, pw = $('#aPw').value;
-  var r = mode === 'login' ? await Store.login(email, pw) : await Store.register(email, pw, $('#aId').value);
+  var r = await Store.login(email, pw);
   btn.disabled = false;
   if (!r.ok) $('#aErr').textContent = r.error;
   // on success, onAuth() below switches the view
@@ -38,13 +26,6 @@ $('#aForgot').addEventListener('click', async function () {
   $('#aErr').textContent = r.ok ? 'Password reset email sent. Check your inbox.' : r.error;
 });
 
-$('#cGo').addEventListener('click', async function () {
-  this.disabled = true; $('#cErr').textContent = '';
-  var r = await Store.claim($('#cId').value);
-  this.disabled = false;
-  if (!r.ok) { $('#cErr').textContent = r.error; return; }
-  boot();
-});
 $('#cOut').addEventListener('click', function () { Store.logout(); });
 $('#logout').addEventListener('click', function () { Store.logout(); });
 
@@ -59,12 +40,17 @@ function openEditor(c) {
   card = c; username = c.id;
   show('editor');
   $('#who').textContent = '@' + username;
-  $('#viewLive').href = 'index.html?u=' + username;
+  $('#viewLive').href = cardLink();
   var f = $('#frame');
   f.onload = pushPreview;
   f.src = 'index.html?u=' + username + '&preview=1';
   Store.applyDesign(card.design);
   renderTab();
+  Store.isModerator().then(function (m) {
+    var nav = $('#tabs'), ex = nav.querySelector('[data-t=mod]');
+    if (ex) ex.remove();
+    if (m) { var b = document.createElement('button'); b.dataset.t = 'mod'; b.textContent = 'Moderator'; nav.appendChild(b); }
+  });
 }
 
 $('#togglePrev').onclick = function () {
@@ -92,6 +78,8 @@ function queueSave() {
 }
 
 /* ---------- helpers ---------- */
+// permanent link (never changes, use it for NFC cards); falls back to the name link
+function cardLink() { return card && card.publicId ? 'index.html?c=' + card.publicId : 'index.html?u=' + username; }
 function getPath(o, p) { return p.split('.').reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
 function setPath(o, p, v) {
   var k = p.split('.'), last = k.pop();
@@ -194,18 +182,27 @@ function renderTab() {
         '<label class="f"><span>Blur (' + (d.bgBlur || 0) + 'px)</span><input type="range" min="0" max="20" data-path="design.bgBlur" data-num="1" data-label="Blur ({v}px)" value="' + (d.bgBlur || 0) + '"></label>' : '') +
       '<p class="note">Tip: a darker, slightly blurred picture keeps the text easy to read.</p></div>';
   } else if (tab === 'share') {
-    var url = new URL('index.html?u=' + username, location.href).href;
-    h += '<div class="card"><h4>Your public card link</h4><input id="shareUrl" readonly value="' + esc(url) + '">' +
+    var url = new URL(cardLink(), location.href).href, url2 = new URL('index.html?u=' + username, location.href).href;
+    h += '<div class="card"><h4>Permanent card link (use this for NFC)</h4><input id="shareUrl" readonly value="' + esc(url) + '">' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="copy">Copy link</button><a class="mini" href="' + esc(url) + '" target="_blank" rel="noopener">Open card</a></div>' +
-      '<p class="note">Anyone with this link can view your card. Only you, logged in, can edit it.</p></div>' +
+      '<p class="note">This link never changes, even if the User ID changes. Anyone with it can view your card. Only you, logged in, can edit it.</p>' +
+      '<p class="note">Name link (changes if the User ID changes): ' + esc(url2) + '</p></div>' +
       '<div class="card"><h4>Backup</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export">Download backup (.json)</button>' +
       '<label class="mini upl">Restore backup<input type="file" accept="application/json" id="upImp"></label></div>' +
       '<p class="note">Backups contain your text and design, not photos.</p></div>';
+  } else if (tab === 'mod') {
+    h += '<div class="card"><h4>Create account</h4>' +
+      '<label class="f"><span>Customer email</span><input id="mEmail" type="email" autocapitalize="none" autocomplete="off" placeholder="customer@example.com"></label>' +
+      '<label class="f"><span>Temporary password (min. 8)</span><input id="mPw" type="text" autocapitalize="none" autocomplete="off" placeholder="They can change it later"></label>' +
+      '<div class="row2"><label class="f"><span>User ID</span><input id="mId" autocapitalize="none" autocomplete="off" placeholder="e.g. juan"></label>' +
+      '<label class="f"><span>Full name (optional)</span><input id="mName" autocomplete="off"></label></div>' +
+      '<button class="mini" data-act="mkacct">Create account</button><div class="err" id="msgMod"></div></div>' +
+      '<div class="h">All cards</div><div id="modList"><p class="note">Loading...</p></div>';
   } else if (tab === 'account') {
     h += '<div class="card"><h4>Display name</h4>' + field('Full name shown on your card', 'name') + '</div>' +
       '<div class="card"><h4>User ID (card link)</h4>' +
       '<label class="f"><span>User ID</span><input id="acId" autocapitalize="none" autocomplete="off" value="' + esc(username) + '"></label>' +
-      '<p class="note">3-24 letters, numbers, - or _. Your old link stops working after you change it, so share the new one.</p>' +
+      '<p class="note">3-24 letters, numbers, - or _. The link with your User ID will change. Your permanent link (used for NFC) does not change.</p>' +
       '<button class="mini" data-act="chid">Change User ID</button><div class="err" id="msgId"></div></div>' +
       '<div class="card"><h4>Login email</h4>' +
       '<p class="note">Current: <b>' + esc(Store.userEmail()) + '</b></p>' +
@@ -220,6 +217,7 @@ function renderTab() {
   }
   $('#tabBody').innerHTML = h;
   bindUploads();
+  if (tab === 'mod') loadModList();
 }
 
 /* ---------- input handling ---------- */
@@ -255,6 +253,11 @@ $('#tabBody').addEventListener('click', async function (e) {
   else if (act === 'rmg') { var gid = card.galleryIds.splice(i, 1)[0]; queueSave(); renderTab(); await Store.deletePhoto(username, gid); }
   else if (act === 'bgcolor') { card.design.bgColor = ''; Store.applyDesign(card.design); queueSave(); renderTab(); }
   else if (act === 'rmbg') { var ob = card.bgId; card.bgId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, ob); }
+  else if (act === 'mkacct') { await makeAccount(b); }
+  else if (act === 'copyc') {
+    var cu = new URL('index.html?c=' + b.dataset.pid, location.href).href;
+    (navigator.clipboard ? navigator.clipboard.writeText(cu) : Promise.resolve()).then(function () { b.textContent = 'Copied!'; });
+  }
   else if (act === 'chid') { await changeId(b); }
   else if (act === 'chmail') { await changeMail(b); }
   else if (act === 'chpw') { await changePw(b); }
@@ -262,7 +265,7 @@ $('#tabBody').addEventListener('click', async function (e) {
     var inp = $('#shareUrl'); inp.select();
     (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.resolve(document.execCommand('copy'))).then(function () { b.textContent = 'Copied!'; });
   } else if (act === 'export') {
-    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.avatarId; delete copy.bgId; delete copy.galleryIds;
+    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.publicId; delete copy.avatarId; delete copy.bgId; delete copy.galleryIds;
     copy.wallets = (copy.wallets || []).map(function (w) { return Object.assign({}, w, { qrId: '' }); });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' }));
@@ -276,7 +279,7 @@ function msg(id, text, ok) { var m = $(id); if (!m) return; m.textContent = text
 async function changeId(btn) {
   var name = Store.cleanId($('#acId').value);
   if (name === username) return msg('#msgId', 'That is already your User ID.');
-  if (!confirm('Change your card link to index.html?u=' + name + ' ?\nThe old link will stop working.')) return;
+  if (!confirm('Change your card link to index.html?u=' + name + ' ?\nThe permanent NFC link keeps working.')) return;
   btn.disabled = true; msg('#msgId', 'Saving...', true);
   clearTimeout(timer); await saving;
   var s = await Store.saveCard(card); // flush pending edits under the old ID first
@@ -286,7 +289,7 @@ async function changeId(btn) {
   if (!r.ok) return msg('#msgId', r.error);
   username = r.id; card.id = r.id;
   $('#who').textContent = '@' + username;
-  $('#viewLive').href = 'index.html?u=' + username;
+  $('#viewLive').href = cardLink();
   $('#frame').src = 'index.html?u=' + username + '&preview=1';
   renderTab();
   msg('#msgId', 'User ID changed to @' + username, true);
@@ -307,6 +310,28 @@ async function changePw(btn) {
   btn.disabled = false;
   if (r.ok) { $('#acPw0').value = $('#acPw1').value = $('#acPw2').value = ''; }
   msg('#msgPw', r.ok ? 'Password updated.' : r.error, r.ok);
+}
+
+/* ---------- moderator tools ---------- */
+async function makeAccount(btn) {
+  btn.disabled = true; msg('#msgMod', 'Creating...', true);
+  var r = await Store.createAccount({ email: $('#mEmail').value, password: $('#mPw').value, username: $('#mId').value, name: $('#mName').value });
+  btn.disabled = false;
+  if (!r.ok) return msg('#msgMod', r.error);
+  ['#mEmail', '#mPw', '#mId', '#mName'].forEach(function (x) { $(x).value = ''; });
+  msg('#msgMod', 'Account created: @' + r.username + '. Copy the NFC link below.', true);
+  loadModList();
+}
+async function loadModList() {
+  var box = $('#modList'); if (!box) return;
+  try {
+    var rows = await Store.listCards();
+    box.innerHTML = rows.map(function (r) {
+      return '<div class="card"><h4>@' + esc(r.username) + '</h4><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="mini" data-act="copyc" data-pid="' + esc(r.public_id) + '">Copy NFC link</button>' +
+        '<a class="mini" target="_blank" rel="noopener" href="index.html?c=' + esc(r.public_id) + '">Open</a></div></div>';
+    }).join('') || '<p class="note">No cards yet.</p>';
+  } catch (e) { box.innerHTML = '<p class="note">Could not load the list.</p>'; }
 }
 
 function setSaved(msg, err) { var s = $('#saved'); s.textContent = msg; s.classList.toggle('err', !!err); }
