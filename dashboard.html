@@ -87,6 +87,23 @@
   </div>
 </div>
 
+<script>
+  // watchdog: if the app never starts (e.g. a typo in a script), say so instead of staying on "Loading..."
+  (function () {
+    var errs = [];
+    window.addEventListener('error', function (e) {
+      var m = e.message || ('could not load ' + ((e.target && (e.target.src || e.target.href)) || 'a file'));
+      if (!/fonts\.googleapis/.test(m)) errs.push(m);
+    }, true);
+    setTimeout(function () {
+      var l = document.getElementById('loading');
+      if (l && !l.hidden && !window.__datumStarted) {
+        l.querySelector('.sub').innerHTML = 'The app did not start. ' + (errs[0] ? 'Error: ' + String(errs[0]).replace(/</g, '&lt;') + '. ' : '') +
+          'Open <a href="diagnose.html" style="color:#fff">diagnose.html</a> to find out why.';
+      }
+    }, 6000);
+  })();
+</script>
 <script type="module" src="dashboard.js"></script>
 </body>
 </html>
