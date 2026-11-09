@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // username -> owner uid. Can only be created once, never changed (so names can't be stolen).
+    match /usernames/{name} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && name.matches('^[a-z0-9_-]{3,24}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Public cards: anyone can view, only the owner can edit.
+    match /cards/{name} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.ownerUid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/usernames/$(name)).data.uid == request.auth.uid;
+      allow update: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid;
+
+      match /photos/{pid} {
+        allow read: if true;
+        allow create, update: if request.auth != null
+          && get(/databases/$(database)/documents/cards/$(name)).data.ownerUid == request.auth.uid
+          && request.resource.data.data is string
+          && request.resource.data.data.size() < 900000;
+        allow delete: if request.auth != null
+          && get(/databases/$(database)/documents/cards/$(name)).data.ownerUid == request.auth.uid;
+      }
+    }
+  }
+}

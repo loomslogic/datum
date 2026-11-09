@@ -4,28 +4,207 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b0b0d">
-<title>Digital Card</title>
-<meta name="description" content="Digital business card.">
-<link rel="icon" type="image/png" href="images/favicon.png">
+<title>DATUM | Your digital card in one link</title>
+<meta name="description" content="Create a free digital business card. Share your contacts, socials, photos and story with one link, and update it anytime.">
+<meta property="og:title" content="DATUM | Your digital card in one link">
+<meta property="og:description" content="Create a free digital business card. Share your contacts, socials, photos and story with one link.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="landing.css">
+<script>
+  // Old links like index.html?u=rj now live at card.html?u=rj
+  (function () {
+    var u = new URLSearchParams(location.search).get('u');
+    if (u) location.replace('card.html?u=' + encodeURIComponent(u));
+  })();
+</script>
 </head>
-<body>
+<body class="landing">
 <div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
-<main class="wrap" id="app"></main>
-<div class="lightbox" id="lb" hidden><img alt=""></div>
-<div class="lightbox wmodal" id="wm" hidden>
-  <div class="wbox" role="dialog" aria-modal="true" aria-labelledby="wmTitle">
-    <button class="wclose" id="wmClose" aria-label="Close">&times;</button>
-    <div class="wtitle" id="wmTitle"></div>
-    <div class="wqr" id="wmQr"></div>
-    <div class="wname" id="wmName"></div>
-    <div class="wnum" id="wmNum"></div>
-    <button class="btn" id="wmCopy" type="button">Copy number</button>
-  </div>
+
+<div class="lp">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="container">
+      <a class="logo" href="#top" aria-label="DATUM home"><img src="logo.png" alt="DATUM"></a>
+      <div class="navlinks">
+        <a class="t" href="#goal">Goal</a>
+        <a class="t" href="#features">Features</a>
+        <a class="t" href="#how">How it works</a>
+        <a class="t" href="#faq">FAQ</a>
+        <a class="t" href="dashboard.html">Log in</a>
+        <a class="pill" href="dashboard.html">Create my card</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero2" id="top">
+    <div class="container">
+      <div>
+        <span class="eyebrow glass">Digital business cards</span>
+        <h1>One link for <em>everything</em> about you.</h1>
+        <p class="lead">Put your contact details, social accounts, photos and story on a single card page. Share it with a link, and change it anytime without reprinting anything.</p>
+        <div class="cta">
+          <a class="pill big" href="dashboard.html">Create my free card</a>
+          <a class="pill big ghost" href="#how">See how it works</a>
+        </div>
+        <div class="proof">
+          <span>Free to start</span>
+          <span>No app to install</span>
+          <span>Only you can edit it</span>
+        </div>
+      </div>
+      <div class="mock" aria-hidden="true">
+        <div class="phone2">
+          <div class="screen">
+            <div class="m-av">AB</div>
+            <div class="m-name">Your Name</div>
+            <div class="m-role">Student | Leader | Entrepreneur</div>
+            <div class="m-chips"><i>Your City</i><i>Your Skill</i><i>Your Role</i></div>
+            <div class="m-btn">Save contact</div>
+            <div class="m-link"><b></b>Facebook</div>
+            <div class="m-link"><b></b>Instagram</div>
+            <div class="m-link"><b></b>Portfolio</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- GOAL -->
+  <section class="s" id="goal">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">Our goal</div>
+        <h2 class="title">Make sharing who you are as easy as sending a link.</h2>
+        <p class="sub2">Paper cards get lost, and a phone number alone says very little. DATUM gives every student, freelancer and small business owner a clean online profile that is always up to date.</p>
+      </div>
+      <div class="goal">
+        <div class="c glass rv"><h3>Look professional</h3><p>A modern, glass-style card page that makes a strong first impression on any phone.</p></div>
+        <div class="c glass rv"><h3>Stay in control</h3><p>You own your card. Log in to change your details, photos and design whenever you want.</p></div>
+        <div class="c glass wide rv">
+          <div class="num">1 link</div>
+          <p>Instead of sending your number, then your Facebook, then your portfolio, you send one link. The person on the other end can call you, text you, save your contact and visit your pages in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="s" id="features">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">Features</div>
+        <h2 class="title">Everything you need on one card.</h2>
+      </div>
+      <div class="fgrid">
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg></div><h3>Save contact in one tap</h3><p>Visitors download your details straight into their phone's contacts.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></div><h3>Call, text and email</h3><p>Quick action buttons so people can reach you without typing a thing.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h3>All your links together</h3><p>Facebook, Instagram, TikTok, YouTube, Messenger, Telegram, WhatsApp, Viber, maps and your own website.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><h3>Photo gallery</h3><p>Show your work, products or events with a tap-to-enlarge gallery.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg></div><h3>Story, experience and skills</h3><p>Add your bio, work history, education and skills like a mini resume.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 3-4 3h-2a2 2 0 0 0-1.4 3.4c.6.7.4 1.8-.6 2.4-.6.2-1.3.2-2 .2z"/></svg></div><h3>Make it yours</h3><p>Choose from 5 themes, pick your font and accent colour, and adjust the glass effect.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div><h3>Live preview editor</h3><p>See your card change as you type, right beside the editor.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>Only you can edit</h3><p>Your card is protected by your account. Anyone can view it, but only you can change it.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg></div><h3>Update anytime</h3><p>Changed your number or job? Edit once and your shared link shows the new details.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg></div><h3>QR code <span class="soon">Coming soon</span></h3><p>Print or show a QR code that opens your card when scanned.</p></div>
+        <div class="f glass rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0 1 7-7M5 12a7 7 0 0 0 7 7M9 12a3 3 0 0 1 3-3M9 12a3 3 0 0 0 3 3"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></div><h3>NFC tap card <span class="soon">Coming soon</span></h3><p>Tap a physical card on a phone to open your page instantly.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="s" id="how">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">How it works</div>
+        <h2 class="title">From sign up to sharing in about five minutes.</h2>
+      </div>
+      <div class="steps">
+        <div class="step rv"><div class="n">1</div><div class="b glass"><h3>Create your account</h3><p>Sign up with your email and choose your User ID. That ID becomes your personal card link, so pick one that is easy to remember.</p></div></div>
+        <div class="step rv"><div class="n">2</div><div class="b glass"><h3>Build your card</h3><p>In your dashboard, add your name, bio, contact details, social links, photos and resume. A live preview shows exactly what visitors will see.</p></div></div>
+        <div class="step rv"><div class="n">3</div><div class="b glass"><h3>Style it</h3><p>Pick a theme, font and accent colour so the card looks like you.</p></div></div>
+        <div class="step rv"><div class="n">4</div><div class="b glass"><h3>Share your link</h3><p>Copy your link and send it in chat, put it in your bio, or add it to your email signature. Anyone can open it on any phone, with nothing to install.</p></div></div>
+        <div class="step rv"><div class="n">5</div><div class="b glass"><h3>Keep it fresh</h3><p>Log in whenever something changes. Your link stays the same, and the new details show up right away.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO -->
+  <section class="s" id="who">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">Who it's for</div>
+        <h2 class="title">Made for people who meet people.</h2>
+      </div>
+      <div class="aud rv">
+        <span class="glass">Students and student leaders</span>
+        <span class="glass">Freelancers</span>
+        <span class="glass">Small business owners</span>
+        <span class="glass">Online sellers</span>
+        <span class="glass">Creators</span>
+        <span class="glass">Job seekers</span>
+        <span class="glass">Organizations and teams</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="s" id="faq">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">FAQ</div>
+        <h2 class="title">Good to know.</h2>
+      </div>
+      <div class="faq">
+        <details class="glass rv"><summary>Is it free?</summary><p>Yes, creating a card is free.</p></details>
+        <details class="glass rv"><summary>Do the people I share it with need an account or app?</summary><p>No. Your card is a normal web page, so anyone can open it in their phone browser.</p></details>
+        <details class="glass rv"><summary>Who can edit my card?</summary><p>Only you, after logging in to your account. Visitors can only view it.</p></details>
+        <details class="glass rv"><summary>Can I change my User ID later?</summary><p>No. Your User ID is part of your card link, so it is fixed once you choose it. Pick one you will be happy with.</p></details>
+        <details class="glass rv"><summary>Can I hide my phone number and email?</summary><p>Yes. By default the card only shows "Tap to call" and "Send email" buttons. You can choose to show the actual details in the dashboard.</p></details>
+        <details class="glass rv"><summary>Will there be QR codes and NFC cards?</summary><p>Both are planned. Your card link will work with them, so nothing you set up now is wasted.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="s">
+    <div class="container">
+      <div class="final glass rv">
+        <h2>Ready to get your own card?</h2>
+        <p>Create your account, choose your User ID and have a shareable card ready in minutes.</p>
+        <div class="cta">
+          <a class="pill big" href="dashboard.html">Create my free card</a>
+          <a class="pill big ghost" href="dashboard.html">Log in</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="lf">
+    <div class="container">
+      <div><img class="flogo" src="logo.png" alt="DATUM"> &copy; <span id="yr"></span> All rights reserved.</div>
+      <div><a href="#goal">Goal</a><a href="#features">Features</a><a href="#how">How it works</a><a href="dashboard.html">Log in</a></div>
+    </div>
+  </footer>
 </div>
 
-<script type="module" src="script.js"></script>
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  (function () {
+    var els = document.querySelectorAll('.rv');
+    if (!('IntersectionObserver' in window)) { document.documentElement.classList.add('noanim'); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(function (el) { io.observe(el); });
+  })();
+</script>
 </body>
 </html>
