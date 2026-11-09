@@ -1,6 +1,9 @@
 /* DATUM Card - data layer on Supabase (Auth + Postgres with Row Level Security). ES module. */
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { supabaseConfig, ownerEmail } from './supabase-config.js';
+import * as CFG from './supabase-config.js';
+// tolerant import: a missing line in supabase-config.js must never stop the whole app from starting
+const supabaseConfig = CFG.supabaseConfig || {};
+const ownerEmail = CFG.ownerEmail || '';
 
 const configured = !/YOUR_/.test(supabaseConfig.url || 'YOUR_') && !/YOUR_/.test(supabaseConfig.anonKey || 'YOUR_');
 let sb = null, initError = '';
