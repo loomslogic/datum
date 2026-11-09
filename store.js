@@ -122,7 +122,9 @@ export const Store = {
 
   login: async function (email, pass) {
     try {
-      var r = await sb.auth.signInWithPassword({ email: email.trim(), password: pass });
+      var e = String(email || '').trim();
+      if (e.indexOf('@') < 0) e = cleanId(e) + '@datum.invalid'; // User ID login
+      var r = await sb.auth.signInWithPassword({ email: e, password: pass });
       return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
     } catch (e) { return { ok: false, error: friendly(e) }; }
   },
@@ -182,16 +184,27 @@ export const Store = {
     } catch (e) { return false; }
   },
   // Calls the create-user edge function (moderators only; checked on the server)
-  createAccount: async function (o) {
+  // shared caller for the create-user function
+  callFn: async function (body) {
     try {
-      var r = await sb.functions.invoke('create-user', { body: o });
+      var r = await sb.functions.invoke('create-user', { body: body });
       if (r.error) {
         var m = ''; try { m = (await r.error.context.json()).error; } catch (e) { /* ignore */ }
         return { ok: false, error: m || 'Could not reach the account service. Is the create-user function deployed?' };
       }
       if (r.data && r.data.error) return { ok: false, error: r.data.error };
-      return { ok: true, username: r.data.username, publicId: r.data.publicId };
+      return Object.assign({ ok: true }, r.data);
     } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  isPlaceholderEmail: function () { return /@datum\.invalid$/i.test(currentUser && currentUser.email || ''); },
+  setEmail: async function (email) {
+    var r = await Store.callFn({ action: 'set-email', email: email });
+    if (r.ok) { try { await sb.auth.refreshSession(); var u = (await sb.auth.getUser()).data.user; if (u) currentUser = u; } catch (e) { /* ignore */ } }
+    return r;
+  },
+  modResetPassword: function (username, password) { return Store.callFn({ action: 'reset-password', username: username, password: password }); },
+  createAccount: async function (o) {
+    return Store.callFn(Object.assign({ action: 'create' }, o));
   },
   listCards: async function () {
     var r = await sb.from('cards').select('username, public_id, updated_at').order('updated_at', { ascending: false }).limit(200);
