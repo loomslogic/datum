@@ -76,16 +76,16 @@ function friendly(e) {
 // a card's stored JSON never contains ids/photos/owner (those live in columns / the photos table)
 function cardData(card) {
   var d = Object.assign({}, card);
-  delete d.photos; delete d.id; delete d.ownerUid;
+  delete d.photos; delete d.id; delete d.ownerUid; delete d.publicId;
   return d;
 }
 
 async function loadCard(name) {
-  var r = await sb.from('cards').select('username, owner_uid, data').eq('username', name).maybeSingle();
+  var r = await sb.from('cards').select('username, owner_uid, public_id, data').eq('username', name).maybeSingle();
   if (r.error) throw r.error;
   if (!r.data) return null;
   var c = Object.assign(blankCard(''), r.data.data);
-  c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.photos = {};
+  c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.publicId = r.data.public_id || ''; c.photos = {};
   var ids = [c.avatarId, c.bgId].concat(c.galleryIds || [], (c.wallets || []).map(function (w) { return w && w.qrId; })).filter(Boolean);
   if (ids.length) {
     var p = await sb.from('photos').select('id, data').in('id', ids);
@@ -120,31 +120,6 @@ export const Store = {
     return !r.data;
   },
 
-  // Claim a User ID for the signed-in user and create their card. The primary key makes this atomic.
-  claim: async function (rawName) {
-    try {
-      var u = (await sb.auth.getUser()).data.user; if (!u) return { ok: false, error: 'Please log in first.' };
-      var name = cleanId(rawName);
-      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
-      var card = (ownerEmail && u.email && u.email.toLowerCase() === ownerEmail.toLowerCase()) ? seedCard(u.id) : blankCard(u.id);
-      var r = await sb.from('cards').insert({ username: name, owner_uid: u.id, data: cardData(card) });
-      if (r.error) return { ok: false, error: friendly(r.error) };
-      return { ok: true, id: name };
-    } catch (e) { return { ok: false, error: friendly(e) }; }
-  },
-
-  register: async function (email, pass, rawName) {
-    try {
-      var name = cleanId(rawName);
-      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
-      if (!(await Store.usernameFree(name))) return { ok: false, error: 'That User ID is already taken.' };
-      var r = await sb.auth.signUp({ email: email.trim(), password: pass });
-      if (r.error) return { ok: false, error: friendly(r.error) };
-      if (!r.data.session) return { ok: false, error: 'Account created! Check your email to confirm it, then log in and pick your User ID.' };
-      var c = await Store.claim(name);
-      return c.ok ? c : { ok: true, claimPending: true, error: c.error };
-    } catch (e) { return { ok: false, error: friendly(e) }; }
-  },
   login: async function (email, pass) {
     try {
       var r = await sb.auth.signInWithPassword({ email: email.trim(), password: pass });
@@ -198,7 +173,38 @@ export const Store = {
     } catch (e) { return { ok: false, error: friendly(e) }; }
   },
 
+  // ---- moderators ----
+  isModerator: async function () {
+    try {
+      var u = (await sb.auth.getUser()).data.user; if (!u) return false;
+      var r = await sb.from('moderators').select('user_id').eq('user_id', u.id).maybeSingle();
+      return !!(r.data && !r.error);
+    } catch (e) { return false; }
+  },
+  // Calls the create-user edge function (moderators only; checked on the server)
+  createAccount: async function (o) {
+    try {
+      var r = await sb.functions.invoke('create-user', { body: o });
+      if (r.error) {
+        var m = ''; try { m = (await r.error.context.json()).error; } catch (e) { /* ignore */ }
+        return { ok: false, error: m || 'Could not reach the account service. Is the create-user function deployed?' };
+      }
+      if (r.data && r.data.error) return { ok: false, error: r.data.error };
+      return { ok: true, username: r.data.username, publicId: r.data.publicId };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  listCards: async function () {
+    var r = await sb.from('cards').select('username, public_id, updated_at').order('updated_at', { ascending: false }).limit(200);
+    if (r.error) throw r.error;
+    return r.data;
+  },
+
   // Public read
+  getCardByPid: async function (pid) {
+    var r = await sb.from('cards').select('username').eq('public_id', pid).maybeSingle();
+    if (r.error) throw r.error;
+    return r.data ? loadCard(r.data.username) : null;
+  },
   getCard: function (name) { return loadCard(cleanId(name)); },
   // The signed-in user's own card (null if they have not claimed a User ID yet)
   myCard: async function () {
