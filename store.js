@@ -187,10 +187,10 @@ export const Store = {
   // shared caller for the create-user function
   callFn: async function (body) {
     try {
-      var r = await sb.functions.invoke('create-user', { body: body });
+      var r = await sb.functions.invoke('smart-endpoint', { body: body });
       if (r.error) {
         var m = ''; try { m = (await r.error.context.json()).error; } catch (e) { /* ignore */ }
-        return { ok: false, error: m || 'Could not reach the account service. Is the create-user function deployed?' };
+        return { ok: false, error: m || 'Could not reach the account service. Is the smart-endpoint function deployed?' };
       }
       if (r.data && r.data.error) return { ok: false, error: r.data.error };
       return Object.assign({ ok: true }, r.data);
