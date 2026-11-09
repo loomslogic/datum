@@ -3,6 +3,7 @@ import { Store } from './store.js';
 
 var params = new URLSearchParams(location.search);
 var id = Store.cleanId(params.get('u') || '');
+var pid = String(params.get('c') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32); // permanent NFC id
 var app = document.getElementById('app');
 
 function esc(s) {
@@ -198,11 +199,11 @@ function message(title, text, btn, logoOnly) {
 async function load() {
   if (params.get('preview') === '1') return; // dashboard preview: wait for the card via postMessage
   if (!Store.configured) return message('Not set up yet', 'Add your Supabase settings in supabase-config.js (see README.md).', 'Open dashboard');
-  if (!id) return message('DATUM Digital Cards', 'Create your own digital business card and share it with one link.', 'Create your card', true);
+  if (!id && !pid) return message('DATUM Digital Cards', 'Open a card link, or log in to edit your card.', 'Log in', true);
   app.innerHTML = '<div class="notfound"><p>Loading...</p></div>';
   try {
-    var c = await Store.getCard(id);
-    if (!c) return message('Card not found', 'There is no card for "' + id + '".', 'Create yours');
+    var c = pid ? await Store.getCardByPid(pid) : await Store.getCard(id);
+    if (!c) return message('Card not found', 'There is no card for "' + (pid || id) + '".', 'Log in');
     render(c);
   } catch (e) { message('Could not load card', 'Please check your connection and try again.'); }
 }
