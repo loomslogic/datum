@@ -22,6 +22,7 @@ $('#aPw').addEventListener('keydown', function (e) { if (e.key === 'Enter') go()
 $('#aForgot').addEventListener('click', async function () {
   var email = $('#aEmail').value.trim();
   if (!email) { $('#aErr').textContent = 'Enter your email above first.'; return; }
+  if (email.indexOf('@') < 0) { $('#aErr').textContent = 'Password reset by email needs an email on your account. Ask a moderator to reset your password.'; return; }
   var r = await Store.resetPassword(email);
   $('#aErr').textContent = r.ok ? 'Password reset email sent. Check your inbox.' : r.error;
 });
@@ -192,10 +193,11 @@ function renderTab() {
       '<p class="note">Backups contain your text and design, not photos.</p></div>';
   } else if (tab === 'mod') {
     h += '<div class="card"><h4>Create account</h4>' +
-      '<label class="f"><span>Customer email</span><input id="mEmail" type="email" autocapitalize="none" autocomplete="off" placeholder="customer@example.com"></label>' +
+      '<label class="f"><span>Customer email (optional)</span><input id="mEmail" type="email" autocapitalize="none" autocomplete="off" placeholder="leave empty to use just a User ID"></label>' +
       '<label class="f"><span>Temporary password (min. 8)</span><input id="mPw" type="text" autocapitalize="none" autocomplete="off" placeholder="They can change it later"></label>' +
       '<div class="row2"><label class="f"><span>User ID</span><input id="mId" autocapitalize="none" autocomplete="off" placeholder="e.g. juan"></label>' +
       '<label class="f"><span>Full name (optional)</span><input id="mName" autocomplete="off"></label></div>' +
+      '<p class="note">With no email, the customer logs in with their User ID and the temporary password, then adds their own email in Account.</p>' +
       '<button class="mini" data-act="mkacct">Create account</button><div class="err" id="msgMod"></div></div>' +
       '<div class="h">All cards</div><div id="modList"><p class="note">Loading...</p></div>';
   } else if (tab === 'account') {
@@ -204,11 +206,17 @@ function renderTab() {
       '<label class="f"><span>User ID</span><input id="acId" autocapitalize="none" autocomplete="off" value="' + esc(username) + '"></label>' +
       '<p class="note">3-24 letters, numbers, - or _. The link with your User ID will change. Your permanent link (used for NFC) does not change.</p>' +
       '<button class="mini" data-act="chid">Change User ID</button><div class="err" id="msgId"></div></div>' +
-      '<div class="card"><h4>Login email</h4>' +
-      '<p class="note">Current: <b>' + esc(Store.userEmail()) + '</b></p>' +
-      '<label class="f"><span>New email</span><input id="acEmail" type="email" autocapitalize="none" autocomplete="email" placeholder="new@example.com"></label>' +
-      '<p class="note">We email a confirmation link. The change applies after you open it.</p>' +
-      '<button class="mini" data-act="chmail">Change email</button><div class="err" id="msgMail"></div></div>' +
+      (Store.isPlaceholderEmail()
+        ? '<div class="card"><h4>Add your email</h4>' +
+          '<p class="note">You log in with your User ID for now. Add your own email so you can log in with it and reset your password by email.</p>' +
+          '<label class="f"><span>Your email</span><input id="acEmail" type="email" autocapitalize="none" autocomplete="email" placeholder="you@example.com"></label>' +
+          '<p class="note">This takes effect right away, so check the spelling. After it, log in with this email.</p>' +
+          '<button class="mini" data-act="setmail">Save email</button><div class="err" id="msgMail"></div></div>'
+        : '<div class="card"><h4>Login email</h4>' +
+          '<p class="note">Current: <b>' + esc(Store.userEmail()) + '</b></p>' +
+          '<label class="f"><span>New email</span><input id="acEmail" type="email" autocapitalize="none" autocomplete="email" placeholder="new@example.com"></label>' +
+          '<p class="note">We email a confirmation link. The change applies after you open it.</p>' +
+          '<button class="mini" data-act="chmail">Change email</button><div class="err" id="msgMail"></div></div>') +
       '<div class="card"><h4>Password</h4>' +
       '<label class="f"><span>Current password</span><input id="acPw0" type="password" autocomplete="current-password"></label>' +
       '<label class="f"><span>New password</span><input id="acPw1" type="password" autocomplete="new-password" placeholder="min. 6 characters"></label>' +
@@ -254,6 +262,11 @@ $('#tabBody').addEventListener('click', async function (e) {
   else if (act === 'bgcolor') { card.design.bgColor = ''; Store.applyDesign(card.design); queueSave(); renderTab(); }
   else if (act === 'rmbg') { var ob = card.bgId; card.bgId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, ob); }
   else if (act === 'mkacct') { await makeAccount(b); }
+  else if (act === 'resetpw') {
+    var np = window.prompt('New temporary password for @' + b.dataset.u + ' (at least 8 characters):');
+    if (np) { var rr = await Store.modResetPassword(b.dataset.u, np); window.alert(rr.ok ? 'Password changed.' : rr.error); }
+  }
+  else if (act === 'setmail') { await setMail(b); }
   else if (act === 'copyc') {
     var cu = new URL('index.html?c=' + b.dataset.pid, location.href).href;
     (navigator.clipboard ? navigator.clipboard.writeText(cu) : Promise.resolve()).then(function () { b.textContent = 'Copied!'; });
@@ -302,6 +315,15 @@ async function changeMail(btn) {
   msg('#msgMail', r.ok ? 'Check your inbox (old and new address) and open the confirmation link.' : r.error, r.ok);
 }
 
+async function setMail(btn) {
+  btn.disabled = true; msg('#msgMail', 'Saving...', true);
+  var r = await Store.setEmail($('#acEmail').value);
+  btn.disabled = false;
+  if (!r.ok) return msg('#msgMail', r.error);
+  renderTab();
+  msg('#msgMail', 'Email saved. From now on, log in with it.', true);
+}
+
 async function changePw(btn) {
   var a = $('#acPw0').value, b1 = $('#acPw1').value, b2 = $('#acPw2').value;
   if (b1 !== b2) return msg('#msgPw', 'The new passwords do not match.');
@@ -319,7 +341,7 @@ async function makeAccount(btn) {
   btn.disabled = false;
   if (!r.ok) return msg('#msgMod', r.error);
   ['#mEmail', '#mPw', '#mId', '#mName'].forEach(function (x) { $(x).value = ''; });
-  msg('#msgMod', 'Account created: @' + r.username + '. Copy the NFC link below.', true);
+  msg('#msgMod', 'Account created: @' + r.username + (r.placeholder ? '. They log in with the User ID "' + r.username + '" and the temporary password.' : '.') + ' Copy the NFC link below.', true);
   loadModList();
 }
 async function loadModList() {
@@ -329,6 +351,7 @@ async function loadModList() {
     box.innerHTML = rows.map(function (r) {
       return '<div class="card"><h4>@' + esc(r.username) + '</h4><div style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="mini" data-act="copyc" data-pid="' + esc(r.public_id) + '">Copy NFC link</button>' +
+        '<button class="mini" data-act="resetpw" data-u="' + esc(r.username) + '">Reset password</button>' +
         '<a class="mini" target="_blank" rel="noopener" href="index.html?c=' + esc(r.public_id) + '">Open</a></div></div>';
     }).join('') || '<p class="note">No cards yet.</p>';
   } catch (e) { box.innerHTML = '<p class="note">Could not load the list.</p>'; }
