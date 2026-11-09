@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b0b0d">
 <title>Dashboard | Digital Card</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -16,50 +14,40 @@
 <div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
 
 <!-- LOADING / SETUP -->
-<main class="auth" id="loading"><div class="panel authbox"><div class="brand"><img src="logo.png" alt="DATUM"></div><p class="sub">Loading...</p></div></main>
+<main class="auth" id="loading"><div class="panel authbox"><div class="brand"><img class="brandlogo" src="logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode('DATUM'))"></div><p class="sub">Loading...</p></div></main>
 <main class="auth" id="setup" hidden>
   <div class="panel authbox">
     <div class="brand">Setup needed</div>
     <p class="sub">Open <b>supabase-config.js</b> and paste your Supabase project settings. Step-by-step instructions are in <b>README.md</b>.</p>
-    <div class="err" id="setupErr"></div>
   </div>
 </main>
 
-<!-- LOGIN / SIGN UP -->
+<!-- LOGIN (accounts are created by a moderator) -->
 <main class="auth" id="auth" hidden>
   <div class="panel authbox">
-    <div class="brand"><img src="logo.png" alt="DATUM"></div>
-    <p class="sub">Create your digital card. Sign up, then only you can edit your profile.</p>
-    <div class="seg" id="authTabs">
-      <button class="on" data-m="login">Log in</button>
-      <button data-m="register">Create account</button>
-    </div>
-    <label class="f"><span>Email</span><input id="aEmail" type="email" autocomplete="email" autocapitalize="none" placeholder="you@example.com"></label>
-    <label class="f" id="aUserWrap" hidden><span>Choose your User ID</span><input id="aId" autocomplete="username" autocapitalize="none" placeholder="e.g. rj"></label>
-    <label class="f"><span>Password</span><input id="aPw" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+    <div class="brand"><img class="brandlogo" src="logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode('DATUM'))"></div>
+    <p class="sub">Log in to edit your digital card. Accounts are created by a DATUM moderator.</p>
+    <label class="f"><span>Email or User ID</span><input id="aEmail" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="you@example.com or your User ID"></label>
+    <label class="f"><span>Password</span><input id="aPw" type="password" autocomplete="current-password" placeholder="Your password"></label>
     <div class="err" id="aErr"></div>
     <button class="btn" id="aGo">Log in</button>
     <button class="linkbtn" id="aForgot" type="button">Forgot password?</button>
-    <p class="hint" id="aHint" hidden>Your card link will be <b>card.html?u=<span id="aPrev">yourid</span></b></p>
   </div>
 </main>
 
-<!-- CHOOSE USER ID (signed in but no card yet) -->
+<!-- SIGNED IN BUT NO CARD YET -->
 <main class="auth" id="claim" hidden>
   <div class="panel authbox">
-    <div class="brand">Pick your User ID</div>
-    <p class="sub">This becomes your card link. It can't be changed later.</p>
-    <label class="f"><span>User ID</span><input id="cId" autocapitalize="none" placeholder="e.g. rj"></label>
-    <div class="err" id="cErr"></div>
-    <button class="btn" id="cGo">Create my card</button>
-    <button class="linkbtn" id="cOut" type="button">Log out</button>
+    <div class="brand">No card yet</div>
+    <p class="sub">Your account does not have a card yet. Please ask a DATUM moderator to set it up.</p>
+    <button class="btn" id="cOut" type="button">Log out</button>
   </div>
 </main>
 
 <!-- EDITOR -->
 <div class="dash" id="editor" hidden>
   <header class="topbar panel">
-    <div class="who"><img class="tlogo" src="logo.png" alt="DATUM"><div><b id="who">@id</b><small>Dashboard</small></div></div>
+    <div><b id="who">@id</b><small>Dashboard</small></div>
     <div class="topbtns">
       <button class="mini" id="togglePrev">Preview</button>
       <a class="mini" id="viewLive" target="_blank" rel="noopener">View card</a>
@@ -74,8 +62,10 @@
         <button data-t="photos">Photos</button>
         <button data-t="links">Links</button>
         <button data-t="resume">Resume</button>
+        <button data-t="wallets">E-Wallets</button>
         <button data-t="design">Design</button>
         <button data-t="share">Share</button>
+        <button data-t="account">Account</button>
       </nav>
       <div id="tabBody"></div>
       <div class="saved" id="saved">All changes saved</div>
@@ -87,23 +77,6 @@
   </div>
 </div>
 
-<script>
-  // watchdog: if the app never starts (e.g. a typo in a script), say so instead of staying on "Loading..."
-  (function () {
-    var errs = [];
-    window.addEventListener('error', function (e) {
-      var m = e.message || ('could not load ' + ((e.target && (e.target.src || e.target.href)) || 'a file'));
-      if (!/fonts\.googleapis/.test(m)) errs.push(m);
-    }, true);
-    setTimeout(function () {
-      var l = document.getElementById('loading');
-      if (l && !l.hidden && !window.__datumStarted) {
-        l.querySelector('.sub').innerHTML = 'The app did not start. ' + (errs[0] ? 'Error: ' + String(errs[0]).replace(/</g, '&lt;') + '. ' : '') +
-          'Open <a href="diagnose.html" style="color:#fff">diagnose.html</a> to find out why.';
-      }
-    }, 6000);
-  })();
-</script>
 <script type="module" src="dashboard.js"></script>
 </body>
 </html>
