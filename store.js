@@ -1,16 +1,9 @@
 /* DATUM Card - data layer on Supabase (Auth + Postgres with Row Level Security). ES module. */
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import * as CFG from './supabase-config.js';
-// tolerant import: a missing line in supabase-config.js must never stop the whole app from starting
-const supabaseConfig = CFG.supabaseConfig || {};
-const ownerEmail = CFG.ownerEmail || '';
+import { supabaseConfig, ownerEmail } from './supabase-config.js';
 
 const configured = !/YOUR_/.test(supabaseConfig.url || 'YOUR_') && !/YOUR_/.test(supabaseConfig.anonKey || 'YOUR_');
-let sb = null, initError = '';
-if (configured) {
-  try { sb = createClient(String(supabaseConfig.url).trim(), String(supabaseConfig.anonKey).trim()); }
-  catch (e) { initError = (e && e.message) || String(e); }
-}
+const sb = configured ? createClient(supabaseConfig.url, supabaseConfig.anonKey) : null;
 let currentUser = null;
 
 const THEMES = {
@@ -25,9 +18,9 @@ const FONTS = ['Outfit', 'Inter', 'Poppins', 'Space Grotesk', 'Playfair Display'
 function blankCard(ownerUid) {
   return {
     ownerUid: ownerUid, name: 'Your Name', role: 'Your title | Your role', bio: 'Write a short intro about yourself here.',
-    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', galleryIds: [],
-    experience: [], education: [], skills: [], links: [],
-    design: { theme: 'graphite', accent: '#ffffff', font: 'Outfit', blur: 22, bigword: true, bigwordText: 'HELLO' }
+    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', bgId: '', galleryIds: [],
+    experience: [], education: [], skills: [], links: [], wallets: [],
+    design: { theme: 'graphite', accent: '#ffffff', font: 'Outfit', blur: 22, bigword: true, bigwordText: 'HELLO', bgColor: '', bgDim: 35, bgBlur: 0 }
   };
 }
 function seedCard(ownerUid) {
@@ -58,6 +51,14 @@ function seedCard(ownerUid) {
   });
 }
 
+// mix a #rrggbb colour toward white by amt (0-1)
+function lighten(hex, amt) {
+  var n = parseInt(hex.slice(1), 16), out = '#';
+  [n >> 16 & 255, n >> 8 & 255, n & 255].forEach(function (v) {
+    out += ('0' + Math.round(v + (255 - v) * amt).toString(16)).slice(-2);
+  });
+  return out;
+}
 function cleanId(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24); }
 function friendly(e) {
   var m = String((e && e.message) || ''), c = (e && e.code) || '';
@@ -75,17 +76,17 @@ function friendly(e) {
 // a card's stored JSON never contains ids/photos/owner (those live in columns / the photos table)
 function cardData(card) {
   var d = Object.assign({}, card);
-  delete d.photos; delete d.id; delete d.ownerUid;
+  delete d.photos; delete d.id; delete d.ownerUid; delete d.publicId;
   return d;
 }
 
 async function loadCard(name) {
-  var r = await sb.from('cards').select('username, owner_uid, data').eq('username', name).maybeSingle();
+  var r = await sb.from('cards').select('username, owner_uid, public_id, data').eq('username', name).maybeSingle();
   if (r.error) throw r.error;
   if (!r.data) return null;
   var c = Object.assign(blankCard(''), r.data.data);
-  c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.photos = {};
-  var ids = [c.avatarId].concat(c.galleryIds || []).filter(Boolean);
+  c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.publicId = r.data.public_id || ''; c.photos = {};
+  var ids = [c.avatarId, c.bgId].concat(c.galleryIds || [], (c.wallets || []).map(function (w) { return w && w.qrId; })).filter(Boolean);
   if (ids.length) {
     var p = await sb.from('photos').select('id, data').in('id', ids);
     if (p.error) throw p.error;
@@ -95,27 +96,21 @@ async function loadCard(name) {
 }
 
 export const Store = {
-  configured: configured, initError: initError, THEMES: THEMES, FONTS: FONTS, cleanId: cleanId,
+  configured: configured, THEMES: THEMES, FONTS: FONTS, cleanId: cleanId,
 
   // cb(user|null) is called when the logged-in user actually changes (not on every token refresh)
   onAuth: function (cb) {
     var lastId = undefined;
-    function emit(user) {
-      currentUser = user || null;
-      var id = currentUser ? currentUser.id : null;
-      if (id === lastId) return;
-      lastId = id; cb(currentUser);
-    }
     sb.auth.onAuthStateChange(function (event, session) {
       if (event === 'PASSWORD_RECOVERY') {
         var pw = window.prompt('Enter your new password (at least 6 characters):');
         if (pw) sb.auth.updateUser({ password: pw }).then(function (r) { alert(r.error ? friendly(r.error) : 'Password updated.'); });
       }
-      emit(session ? session.user : null);
+      currentUser = session ? session.user : null;
+      var id = currentUser ? currentUser.id : null;
+      if (id === lastId) return;
+      lastId = id; cb(currentUser);
     });
-    // fallback in case the library does not send an initial event
-    sb.auth.getSession().then(function (r) { emit(r && r.data && r.data.session ? r.data.session.user : null); })
-      .catch(function () { emit(null); });
   },
   currentUser: function () { return currentUser; },
 
@@ -125,34 +120,11 @@ export const Store = {
     return !r.data;
   },
 
-  // Claim a User ID for the signed-in user and create their card. The primary key makes this atomic.
-  claim: async function (rawName) {
-    try {
-      var u = (await sb.auth.getUser()).data.user; if (!u) return { ok: false, error: 'Please log in first.' };
-      var name = cleanId(rawName);
-      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
-      var card = (ownerEmail && u.email && u.email.toLowerCase() === ownerEmail.toLowerCase()) ? seedCard(u.id) : blankCard(u.id);
-      var r = await sb.from('cards').insert({ username: name, owner_uid: u.id, data: cardData(card) });
-      if (r.error) return { ok: false, error: friendly(r.error) };
-      return { ok: true, id: name };
-    } catch (e) { return { ok: false, error: friendly(e) }; }
-  },
-
-  register: async function (email, pass, rawName) {
-    try {
-      var name = cleanId(rawName);
-      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
-      if (!(await Store.usernameFree(name))) return { ok: false, error: 'That User ID is already taken.' };
-      var r = await sb.auth.signUp({ email: email.trim(), password: pass });
-      if (r.error) return { ok: false, error: friendly(r.error) };
-      if (!r.data.session) return { ok: false, error: 'Account created! Check your email to confirm it, then log in and pick your User ID.' };
-      var c = await Store.claim(name);
-      return c.ok ? c : { ok: true, claimPending: true, error: c.error };
-    } catch (e) { return { ok: false, error: friendly(e) }; }
-  },
   login: async function (email, pass) {
     try {
-      var r = await sb.auth.signInWithPassword({ email: email.trim(), password: pass });
+      var e = String(email || '').trim();
+      if (e.indexOf('@') < 0) e = cleanId(e) + '@datum.invalid'; // User ID login
+      var r = await sb.auth.signInWithPassword({ email: e, password: pass });
       return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
     } catch (e) { return { ok: false, error: friendly(e) }; }
   },
@@ -164,7 +136,88 @@ export const Store = {
   },
   logout: function () { return sb.auth.signOut(); },
 
+  // ---- account settings (signed-in user) ----
+  userEmail: function () { return currentUser ? currentUser.email : ''; },
+
+  // Change the password. The current password is checked first.
+  changePassword: async function (current, next) {
+    try {
+      if (!currentUser || !currentUser.email) return { ok: false, error: 'Please log in first.' };
+      if (!current) return { ok: false, error: 'Enter your current password.' };
+      if (!next || next.length < 6) return { ok: false, error: 'Password must be at least 6 characters.' };
+      var chk = await sb.auth.signInWithPassword({ email: currentUser.email, password: current });
+      if (chk.error) return { ok: false, error: 'Your current password is wrong.' };
+      var r = await sb.auth.updateUser({ password: next });
+      return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  // Change the login email. Supabase sends a confirmation link to the new address.
+  changeEmail: async function (email) {
+    try {
+      email = String(email || '').trim();
+      if (!email) return { ok: false, error: 'Enter the new email address.' };
+      var r = await sb.auth.updateUser({ email: email }, { emailRedirectTo: location.origin + location.pathname });
+      return r.error ? { ok: false, error: friendly(r.error) } : { ok: true };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  // Change the User ID (card link). Needs the rename_card() function from schema_update.sql.
+  changeUserId: async function (rawName) {
+    try {
+      var name = cleanId(rawName);
+      if (name.length < 3) return { ok: false, error: 'User ID needs 3-24 letters, numbers, - or _.' };
+      var r = await sb.rpc('rename_card', { new_name: name });
+      if (r.error) {
+        if (/rename_card/i.test(r.error.message || '') && /not find|does not exist|schema cache/i.test(r.error.message || ''))
+          return { ok: false, error: 'Run schema_update.sql in Supabase first (see README).' };
+        return { ok: false, error: friendly(r.error) };
+      }
+      return { ok: true, id: name };
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+
+  // ---- moderators ----
+  isModerator: async function () {
+    try {
+      var u = (await sb.auth.getUser()).data.user; if (!u) return false;
+      var r = await sb.from('moderators').select('user_id').eq('user_id', u.id).maybeSingle();
+      return !!(r.data && !r.error);
+    } catch (e) { return false; }
+  },
+  // Calls the create-user edge function (moderators only; checked on the server)
+  // shared caller for the create-user function
+  callFn: async function (body) {
+    try {
+      var r = await sb.functions.invoke('smart-endpoint', { body: body });
+      if (r.error) {
+        var m = ''; try { m = (await r.error.context.json()).error; } catch (e) { /* ignore */ }
+        return { ok: false, error: m || 'Could not reach the account service. Is the smart-endpoint function deployed?' };
+      }
+      if (r.data && r.data.error) return { ok: false, error: r.data.error };
+      return Object.assign({ ok: true }, r.data);
+    } catch (e) { return { ok: false, error: friendly(e) }; }
+  },
+  isPlaceholderEmail: function () { return /@datum\.invalid$/i.test(currentUser && currentUser.email || ''); },
+  setEmail: async function (email) {
+    var r = await Store.callFn({ action: 'set-email', email: email });
+    if (r.ok) { try { await sb.auth.refreshSession(); var u = (await sb.auth.getUser()).data.user; if (u) currentUser = u; } catch (e) { /* ignore */ } }
+    return r;
+  },
+  modResetPassword: function (username, password) { return Store.callFn({ action: 'reset-password', username: username, password: password }); },
+  createAccount: async function (o) {
+    return Store.callFn(Object.assign({ action: 'create' }, o));
+  },
+  listCards: async function () {
+    var r = await sb.from('cards').select('username, public_id, updated_at').order('updated_at', { ascending: false }).limit(200);
+    if (r.error) throw r.error;
+    return r.data;
+  },
+
   // Public read
+  getCardByPid: async function (pid) {
+    var r = await sb.from('cards').select('username').eq('public_id', pid).maybeSingle();
+    if (r.error) throw r.error;
+    return r.data ? loadCard(r.data.username) : null;
+  },
   getCard: function (name) { return loadCard(cleanId(name)); },
   // The signed-in user's own card (null if they have not claimed a User ID yet)
   myCard: async function () {
@@ -192,20 +245,22 @@ export const Store = {
   applyDesign: function (d) {
     d = d || {};
     var t = THEMES[d.theme] || THEMES.graphite, r = document.documentElement.style;
-    r.setProperty('--bg', t.bg); r.setProperty('--top', t.top);
+    var bg = t.bg, top = t.top;
+    if (/^#[0-9a-f]{6}$/i.test(d.bgColor || '')) { bg = d.bgColor; top = lighten(d.bgColor, 0.14); }
+    r.setProperty('--bg', bg); r.setProperty('--top', top);
     r.setProperty('--o1', t.o1); r.setProperty('--o2', t.o2); r.setProperty('--o3', t.o3);
     r.setProperty('--accent', d.accent || '#ffffff');
     r.setProperty('--blur', 'blur(' + (d.blur == null ? 22 : d.blur) + 'px) saturate(160%)');
     r.setProperty('--font', "'" + (d.font || 'Outfit') + "'");
   },
   // resize + compress an image file to a data URL that fits Firestore's 1MB document limit
-  fileToDataURL: function (file, max) {
+  fileToDataURL: function (file, max, startQ) {
     return new Promise(function (res, rej) {
       var fr = new FileReader(); fr.onerror = rej;
       fr.onload = function () {
         var img = new Image(); img.onerror = rej;
         img.onload = function () {
-          var size = max || 800, q = 0.8, out;
+          var size = max || 800, q = startQ || 0.8, out;
           for (var i = 0; i < 6; i++) {
             var s = Math.min(1, size / Math.max(img.width, img.height));
             var c = document.createElement('canvas');
