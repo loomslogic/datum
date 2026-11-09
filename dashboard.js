@@ -3,6 +3,7 @@ import { Store } from './store.js';
 
 var $ = function (s) { return document.querySelector(s); };
 var card = null, username = null, tab = 'profile', mode = 'login', timer = null, saving = Promise.resolve();
+window.__datumStarted = true;
 var VIEWS = ['loading', 'setup', 'auth', 'claim', 'editor'];
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
