@@ -53,8 +53,8 @@ body{
   -webkit-background-clip:text;background-clip:text;
   opacity:.85;user-select:none;
 }
-.hero::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:0;height:120px;
-  background:linear-gradient(to bottom,transparent,var(--bg))}
+/* no solid fade at the bottom of the hero: it created a visible seam against the page gradient.
+   PNG photos fade out by themselves (mask on .avatar img). */
 .avatar{
   position:relative;z-index:1;width:310px;max-width:88%;
   display:flex;align-items:flex-end;justify-content:center;
