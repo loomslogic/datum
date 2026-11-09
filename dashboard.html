@@ -22,34 +22,25 @@
   </div>
 </main>
 
-<!-- LOGIN / SIGN UP -->
+<!-- LOGIN (accounts are created by a moderator) -->
 <main class="auth" id="auth" hidden>
   <div class="panel authbox">
     <div class="brand"><img class="brandlogo" src="logo.png" alt="DATUM" onerror="this.replaceWith(document.createTextNode('DATUM'))"></div>
-    <p class="sub">Create your digital card. Sign up, then only you can edit your profile.</p>
-    <div class="seg" id="authTabs">
-      <button class="on" data-m="login">Log in</button>
-      <button data-m="register">Create account</button>
-    </div>
+    <p class="sub">Log in to edit your digital card. Accounts are created by a DATUM moderator.</p>
     <label class="f"><span>Email</span><input id="aEmail" type="email" autocomplete="email" autocapitalize="none" placeholder="you@example.com"></label>
-    <label class="f" id="aUserWrap" hidden><span>Choose your User ID</span><input id="aId" autocomplete="username" autocapitalize="none" placeholder="e.g. rj"></label>
-    <label class="f"><span>Password</span><input id="aPw" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+    <label class="f"><span>Password</span><input id="aPw" type="password" autocomplete="current-password" placeholder="Your password"></label>
     <div class="err" id="aErr"></div>
     <button class="btn" id="aGo">Log in</button>
     <button class="linkbtn" id="aForgot" type="button">Forgot password?</button>
-    <p class="hint" id="aHint" hidden>Your card link will be <b>index.html?u=<span id="aPrev">yourid</span></b></p>
   </div>
 </main>
 
-<!-- CHOOSE USER ID (signed in but no card yet) -->
+<!-- SIGNED IN BUT NO CARD YET -->
 <main class="auth" id="claim" hidden>
   <div class="panel authbox">
-    <div class="brand">Pick your User ID</div>
-    <p class="sub">This becomes your card link. You can change it later in Account settings.</p>
-    <label class="f"><span>User ID</span><input id="cId" autocapitalize="none" placeholder="e.g. rj"></label>
-    <div class="err" id="cErr"></div>
-    <button class="btn" id="cGo">Create my card</button>
-    <button class="linkbtn" id="cOut" type="button">Log out</button>
+    <div class="brand">No card yet</div>
+    <p class="sub">Your account does not have a card yet. Please ask a DATUM moderator to set it up.</p>
+    <button class="btn" id="cOut" type="button">Log out</button>
   </div>
 </main>
 
