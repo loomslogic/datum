@@ -3,7 +3,11 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { supabaseConfig, ownerEmail } from './supabase-config.js';
 
 const configured = !/YOUR_/.test(supabaseConfig.url || 'YOUR_') && !/YOUR_/.test(supabaseConfig.anonKey || 'YOUR_');
-const sb = configured ? createClient(supabaseConfig.url, supabaseConfig.anonKey) : null;
+let sb = null, initError = '';
+if (configured) {
+  try { sb = createClient(String(supabaseConfig.url).trim(), String(supabaseConfig.anonKey).trim()); }
+  catch (e) { initError = (e && e.message) || String(e); }
+}
 let currentUser = null;
 
 const THEMES = {
@@ -88,21 +92,27 @@ async function loadCard(name) {
 }
 
 export const Store = {
-  configured: configured, THEMES: THEMES, FONTS: FONTS, cleanId: cleanId,
+  configured: configured, initError: initError, THEMES: THEMES, FONTS: FONTS, cleanId: cleanId,
 
   // cb(user|null) is called when the logged-in user actually changes (not on every token refresh)
   onAuth: function (cb) {
     var lastId = undefined;
+    function emit(user) {
+      currentUser = user || null;
+      var id = currentUser ? currentUser.id : null;
+      if (id === lastId) return;
+      lastId = id; cb(currentUser);
+    }
     sb.auth.onAuthStateChange(function (event, session) {
       if (event === 'PASSWORD_RECOVERY') {
         var pw = window.prompt('Enter your new password (at least 6 characters):');
         if (pw) sb.auth.updateUser({ password: pw }).then(function (r) { alert(r.error ? friendly(r.error) : 'Password updated.'); });
       }
-      currentUser = session ? session.user : null;
-      var id = currentUser ? currentUser.id : null;
-      if (id === lastId) return;
-      lastId = id; cb(currentUser);
+      emit(session ? session.user : null);
     });
+    // fallback in case the library does not send an initial event
+    sb.auth.getSession().then(function (r) { emit(r && r.data && r.data.session ? r.data.session.user : null); })
+      .catch(function () { emit(null); });
   },
   currentUser: function () { return currentUser; },
 
