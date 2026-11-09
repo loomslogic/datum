@@ -159,9 +159,10 @@ function openWallet(i) {
   };
   document.getElementById('wm').hidden = false;
 }
-document.getElementById('wm').onclick = function (e) { if (e.target === this) this.hidden = true; };
-document.getElementById('wmClose').onclick = function () { document.getElementById('wm').hidden = true; };
-document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { document.getElementById('wm').hidden = true; document.getElementById('lb').hidden = true; } });
+var wmEl = document.getElementById('wm'), wmX = document.getElementById('wmClose');
+if (wmEl) wmEl.onclick = function (e) { if (e.target === this) this.hidden = true; };
+if (wmX) wmX.onclick = function () { if (wmEl) wmEl.hidden = true; };
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (wmEl) wmEl.hidden = true; var lbx = document.getElementById('lb'); if (lbx) lbx.hidden = true; } });
 
 function saveVcf(c) {
   var parts = String(c.name).trim().split(/\s+/), last = parts.length > 1 ? parts.pop() : '', first = parts.join(' ');
