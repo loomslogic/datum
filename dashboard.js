@@ -256,7 +256,19 @@ function bindUploads() {
 
 /* ---------- boot ---------- */
 if (!Store.configured) show('setup');
-else Store.onAuth(function (user) {
-  if (!user) { card = null; show('auth'); return; }
-  boot();
-});
+else if (Store.initError) {
+  $('#setupErr').textContent = 'Supabase said: ' + Store.initError + '. Check the url and anonKey in supabase-config.js.';
+  show('setup');
+} else {
+  // if nothing answers, say so instead of staying on "Loading..." forever
+  setTimeout(function () {
+    if (!$('#loading').hidden) {
+      $('#loading').querySelector('.sub').textContent =
+        'Could not reach the login service. Check your internet connection and that the url and anonKey in supabase-config.js are correct, then reload.';
+    }
+  }, 8000);
+  Store.onAuth(function (user) {
+    if (!user) { card = null; show('auth'); return; }
+    boot();
+  });
+}
