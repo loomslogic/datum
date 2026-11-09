@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b0b0d">
 <title>DATUM | Your digital card in one link</title>
-<meta name="description" content="Create a free digital business card. Share your contacts, socials, photos and story with one link, and update it anytime.">
+<meta name="description" content="NFC digital business cards. Share your contacts, socials, GCash QR, photos and story with one tap, and update it anytime.">
 <meta property="og:title" content="DATUM | Your digital card in one link">
-<meta property="og:description" content="Create a free digital business card. Share your contacts, socials, photos and story with one link.">
+<meta property="og:description" content="NFC digital business cards. One tap opens your whole profile.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -16,10 +16,10 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="landing.css">
 <script>
-  // Old links like index.html?u=rj now live at card.html?u=rj
+  // Card links (?u= or ?c=) live at card.html. Old NFC cards that point at index.html keep working.
   (function () {
-    var u = new URLSearchParams(location.search).get('u');
-    if (u) location.replace('card.html?u=' + encodeURIComponent(u));
+    var q = new URLSearchParams(location.search);
+    if (q.get('u') || q.get('c')) location.replace('card.html' + location.search);
   })();
 </script>
 </head>
@@ -38,7 +38,7 @@
         <a class="t" href="#how">How it works</a>
         <a class="t" href="#faq">FAQ</a>
         <a class="t" href="dashboard.html">Log in</a>
-        <a class="pill" href="dashboard.html">Create my card</a>
+        <a class="pill" data-contact href="mailto:argiebendanillo987@gmail.com?subject=I%20want%20a%20DATUM%20card">Get your card</a>
       </div>
     </div>
   </nav>
@@ -51,11 +51,11 @@
         <h1>One link for <em>everything</em> about you.</h1>
         <p class="lead">Put your contact details, social accounts, photos and story on a single card page. Share it with a link, and change it anytime without reprinting anything.</p>
         <div class="cta">
-          <a class="pill big" href="dashboard.html">Create my free card</a>
+          <a class="pill big" data-contact href="mailto:argiebendanillo987@gmail.com?subject=I%20want%20a%20DATUM%20card">Get your card</a>
           <a class="pill big ghost" href="#how">See how it works</a>
         </div>
         <div class="proof">
-          <span>Free to start</span>
+          <span>No app needed</span>
           <span>No app to install</span>
           <span>Only you can edit it</span>
         </div>
@@ -124,14 +124,14 @@
     <div class="container">
       <div class="rv">
         <div class="kicker">How it works</div>
-        <h2 class="title">From sign up to sharing in about five minutes.</h2>
+        <h2 class="title">From card to profile in minutes.</h2>
       </div>
       <div class="steps">
-        <div class="step rv"><div class="n">1</div><div class="b glass"><h3>Create your account</h3><p>Sign up with your email and choose your User ID. That ID becomes your personal card link, so pick one that is easy to remember.</p></div></div>
+        <div class="step rv"><div class="n">1</div><div class="b glass"><h3>Get your card</h3><p>A DATUM moderator sets up your account and card, then gives you your login. You can start with just a User ID and add your own email later.</p></div></div>
         <div class="step rv"><div class="n">2</div><div class="b glass"><h3>Build your card</h3><p>In your dashboard, add your name, bio, contact details, social links, photos and resume. A live preview shows exactly what visitors will see.</p></div></div>
         <div class="step rv"><div class="n">3</div><div class="b glass"><h3>Style it</h3><p>Pick a theme, font and accent colour so the card looks like you.</p></div></div>
-        <div class="step rv"><div class="n">4</div><div class="b glass"><h3>Share your link</h3><p>Copy your link and send it in chat, put it in your bio, or add it to your email signature. Anyone can open it on any phone, with nothing to install.</p></div></div>
-        <div class="step rv"><div class="n">5</div><div class="b glass"><h3>Keep it fresh</h3><p>Log in whenever something changes. Your link stays the same, and the new details show up right away.</p></div></div>
+        <div class="step rv"><div class="n">4</div><div class="b glass"><h3>Tap or share</h3><p>Tap your NFC card, show your QR code, or send your link in chat or your bio. Anyone can open it on any phone, with nothing to install.</p></div></div>
+        <div class="step rv"><div class="n">5</div><div class="b glass"><h3>Keep it fresh</h3><p>Log in whenever something changes. Your card and its permanent link stay the same, and the new details show up right away.</p></div></div>
       </div>
     </div>
   </section>
@@ -163,12 +163,12 @@
         <h2 class="title">Good to know.</h2>
       </div>
       <div class="faq">
-        <details class="glass rv"><summary>Is it free?</summary><p>Yes, creating a card is free.</p></details>
+        <details class="glass rv"><summary>How do I get a card?</summary><p>Contact DATUM. A moderator will set up your account and card, and you can then edit it yourself anytime.</p></details>
         <details class="glass rv"><summary>Do the people I share it with need an account or app?</summary><p>No. Your card is a normal web page, so anyone can open it in their phone browser.</p></details>
-        <details class="glass rv"><summary>Who can edit my card?</summary><p>Only you, after logging in to your account. Visitors can only view it.</p></details>
-        <details class="glass rv"><summary>Can I change my User ID later?</summary><p>No. Your User ID is part of your card link, so it is fixed once you choose it. Pick one you will be happy with.</p></details>
+        <details class="glass rv"><summary>Who can edit my card?</summary><p>Only you, after logging in. Accounts are created by DATUM moderators, and visitors can only view a card.</p></details>
+        <details class="glass rv"><summary>Can I change my User ID later?</summary><p>Yes, in Account settings. Your permanent NFC link never changes, so your card keeps working. Only the older name-based link changes.</p></details>
         <details class="glass rv"><summary>Can I hide my phone number and email?</summary><p>Yes. By default the card only shows "Tap to call" and "Send email" buttons. You can choose to show the actual details in the dashboard.</p></details>
-        <details class="glass rv"><summary>Will there be QR codes and NFC cards?</summary><p>Both are planned. Your card link will work with them, so nothing you set up now is wasted.</p></details>
+        <details class="glass rv"><summary>Does it work with NFC cards and QR codes?</summary><p>Yes. Tap an NFC card or scan your QR code and your card opens in the phone browser. Most modern phones can read NFC.</p></details>
       </div>
     </div>
   </section>
@@ -178,9 +178,9 @@
     <div class="container">
       <div class="final glass rv">
         <h2>Ready to get your own card?</h2>
-        <p>Create your account, choose your User ID and have a shareable card ready in minutes.</p>
+        <p>Get a card that introduces you, shows your GCash QR and never goes out of date.</p>
         <div class="cta">
-          <a class="pill big" href="dashboard.html">Create my free card</a>
+          <a class="pill big" data-contact href="mailto:argiebendanillo987@gmail.com?subject=I%20want%20a%20DATUM%20card">Get your card</a>
           <a class="pill big ghost" href="dashboard.html">Log in</a>
         </div>
       </div>
