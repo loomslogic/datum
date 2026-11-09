@@ -44,7 +44,7 @@ function openEditor(c) {
   $('#viewLive').href = cardLink();
   var f = $('#frame');
   f.onload = pushPreview;
-  f.src = 'index.html?u=' + username + '&preview=1';
+  f.src = 'card.html?u=' + username + '&preview=1';
   Store.applyDesign(card.design);
   renderTab();
   Store.isModerator().then(function (m) {
@@ -80,7 +80,7 @@ function queueSave() {
 
 /* ---------- helpers ---------- */
 // permanent link (never changes, use it for NFC cards); falls back to the name link
-function cardLink() { return card && card.publicId ? 'index.html?c=' + card.publicId : 'index.html?u=' + username; }
+function cardLink() { return card && card.publicId ? 'card.html?c=' + card.publicId : 'card.html?u=' + username; }
 function getPath(o, p) { return p.split('.').reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
 function setPath(o, p, v) {
   var k = p.split('.'), last = k.pop();
@@ -183,7 +183,7 @@ function renderTab() {
         '<label class="f"><span>Blur (' + (d.bgBlur || 0) + 'px)</span><input type="range" min="0" max="20" data-path="design.bgBlur" data-num="1" data-label="Blur ({v}px)" value="' + (d.bgBlur || 0) + '"></label>' : '') +
       '<p class="note">Tip: a darker, slightly blurred picture keeps the text easy to read.</p></div>';
   } else if (tab === 'share') {
-    var url = new URL(cardLink(), location.href).href, url2 = new URL('index.html?u=' + username, location.href).href;
+    var url = new URL(cardLink(), location.href).href, url2 = new URL('card.html?u=' + username, location.href).href;
     h += '<div class="card"><h4>Permanent card link (use this for NFC)</h4><input id="shareUrl" readonly value="' + esc(url) + '">' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="copy">Copy link</button><a class="mini" href="' + esc(url) + '" target="_blank" rel="noopener">Open card</a></div>' +
       '<p class="note">This link never changes, even if the User ID changes. Anyone with it can view your card. Only you, logged in, can edit it.</p>' +
@@ -268,7 +268,7 @@ $('#tabBody').addEventListener('click', async function (e) {
   }
   else if (act === 'setmail') { await setMail(b); }
   else if (act === 'copyc') {
-    var cu = new URL('index.html?c=' + b.dataset.pid, location.href).href;
+    var cu = new URL('card.html?c=' + b.dataset.pid, location.href).href;
     (navigator.clipboard ? navigator.clipboard.writeText(cu) : Promise.resolve()).then(function () { b.textContent = 'Copied!'; });
   }
   else if (act === 'chid') { await changeId(b); }
@@ -292,7 +292,7 @@ function msg(id, text, ok) { var m = $(id); if (!m) return; m.textContent = text
 async function changeId(btn) {
   var name = Store.cleanId($('#acId').value);
   if (name === username) return msg('#msgId', 'That is already your User ID.');
-  if (!confirm('Change your card link to index.html?u=' + name + ' ?\nThe permanent NFC link keeps working.')) return;
+  if (!confirm('Change your card link to card.html?u=' + name + ' ?\nThe permanent NFC link keeps working.')) return;
   btn.disabled = true; msg('#msgId', 'Saving...', true);
   clearTimeout(timer); await saving;
   var s = await Store.saveCard(card); // flush pending edits under the old ID first
@@ -303,7 +303,7 @@ async function changeId(btn) {
   username = r.id; card.id = r.id;
   $('#who').textContent = '@' + username;
   $('#viewLive').href = cardLink();
-  $('#frame').src = 'index.html?u=' + username + '&preview=1';
+  $('#frame').src = 'card.html?u=' + username + '&preview=1';
   renderTab();
   msg('#msgId', 'User ID changed to @' + username, true);
 }
@@ -352,7 +352,7 @@ async function loadModList() {
       return '<div class="card"><h4>@' + esc(r.username) + '</h4><div style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<button class="mini" data-act="copyc" data-pid="' + esc(r.public_id) + '">Copy NFC link</button>' +
         '<button class="mini" data-act="resetpw" data-u="' + esc(r.username) + '">Reset password</button>' +
-        '<a class="mini" target="_blank" rel="noopener" href="index.html?c=' + esc(r.public_id) + '">Open</a></div></div>';
+        '<a class="mini" target="_blank" rel="noopener" href="card.html?c=' + esc(r.public_id) + '">Open</a></div></div>';
     }).join('') || '<p class="note">No cards yet.</p>';
   } catch (e) { box.innerHTML = '<p class="note">Could not load the list.</p>'; }
 }
