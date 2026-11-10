@@ -1,0 +1,154 @@
+/* DATUM promo: a code-built version of the cinematic commercial (9:16). Everything scales with the stage width (cqw). */
+.promo-in{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:48px;align-items:center}
+.promo-copy h2{font-size:clamp(28px,4.5vw,44px);line-height:1.08;letter-spacing:-1px;font-weight:700;margin:14px 0 14px}
+.promo-copy p{color:var(--muted);font-size:16px;line-height:1.65;max-width:460px}
+.promo-copy ul{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px;max-width:460px}
+.promo-copy li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.5;color:#d8d8de;transition:opacity .4s,color .4s}
+.promo-copy li b{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+.promo-copy li.on{color:#fff}.promo-copy li.on b{background:#fff;color:#111}
+
+.pv{container-type:inline-size;position:relative;width:100%;max-width:360px;aspect-ratio:9/16;border-radius:28px;overflow:hidden;
+  background:#050506;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1);
+  isolation:isolate;user-select:none;-webkit-user-select:none}
+.pv *{box-sizing:border-box}
+.pv-bg,.pv-dust,.pv-cut,.pv-vig{position:absolute;inset:0;pointer-events:none}
+
+/* light */
+.pv-beam{position:absolute;top:-30%;left:-25%;width:90%;height:120%;opacity:0;transform-origin:50% 0;transform:rotate(-24deg);
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.12) 55%,transparent);
+  clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);filter:blur(14px)}
+.pv-smoke{position:absolute;width:90cqw;height:90cqw;border-radius:50%;opacity:0;filter:blur(18px);
+  background:radial-gradient(closest-side,rgba(255,255,255,.28),rgba(255,255,255,.08) 55%,transparent 72%)}
+.pv-smoke.a{left:-30cqw;top:6cqw}.pv-smoke.b{right:-34cqw;top:60cqw;width:100cqw;height:100cqw}
+.pv-floor{position:absolute;left:0;right:0;bottom:0;height:62%;opacity:0;
+  background:
+    repeating-linear-gradient(115deg,transparent 0 9cqw,rgba(255,255,255,.05) 9cqw 9.3cqw,transparent 9.3cqw 21cqw),
+    linear-gradient(180deg,transparent,rgba(120,112,100,.22) 40%,rgba(30,28,26,.8))}
+.pv-top{position:absolute;left:10%;right:10%;top:-8%;height:46%;opacity:0;
+  background:radial-gradient(ellipse at 50% 0,rgba(214,190,150,.5),rgba(214,190,150,.1) 55%,transparent 72%);filter:blur(10px)}
+.pv-vig{background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,0,.65));z-index:6}
+
+/* dust */
+.pv-dust i{position:absolute;bottom:-4%;border-radius:50%;background:rgba(255,255,255,.7);opacity:0;animation:dust linear infinite}
+@keyframes dust{0%{transform:translate(0,0);opacity:0}15%{opacity:.7}85%{opacity:.4}100%{transform:translate(var(--dx,6cqw),-115cqw);opacity:0}}
+
+/* card */
+.pv-card{position:absolute;left:12cqw;top:56cqw;width:76cqw;height:48cqw;opacity:0;perspective:160cqw;z-index:3}
+.pv-flip{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(0)}
+.pv-face{position:absolute;inset:0;border-radius:4cqw;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:linear-gradient(135deg,#1a1a1d,#08080a 60%,#121214);border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 3cqw 8cqw rgba(0,0,0,.7),inset 0 0 0 .3cqw rgba(255,255,255,.04)}
+.pv-face::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 0,rgba(255,255,255,.1),transparent 55%);pointer-events:none}
+.pv-face.front{display:grid;place-items:center}
+.pv-face.front .cl{width:46cqw;height:auto;display:block;position:relative}
+.pv-face svg{position:absolute;width:30cqw;height:20cqw;opacity:.55}
+.pv-face svg.n1{right:0;top:0}.pv-face svg.n2{left:0;bottom:0;transform:rotate(180deg)}
+.pv-face.back{transform:rotateY(180deg);display:grid;place-items:center}
+.pv-face.back img{width:25cqw;height:25cqw;display:block;border-radius:1.2cqw;position:relative}
+.pv-sheen{position:absolute;inset:0;border-radius:4cqw;overflow:hidden;pointer-events:none;mix-blend-mode:screen}
+.pv-sheen::before{content:"";position:absolute;top:-20%;bottom:-20%;width:30%;left:-40%;transform:skewX(-20deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+
+/* NFC rings + phone */
+.pv-nfc{position:absolute;left:50%;top:60cqw;width:0;height:0;z-index:4}
+.pv-nfc i{position:absolute;left:-16cqw;top:-16cqw;width:32cqw;height:32cqw;border-radius:50%;border:.5cqw solid rgba(255,255,255,.75);opacity:0;box-shadow:0 0 4cqw rgba(255,255,255,.4)}
+.pv-phone{position:absolute;left:28cqw;top:60cqw;width:44cqw;height:92cqw;border-radius:7cqw;opacity:0;z-index:2;
+  background:linear-gradient(160deg,#2a2a2f,#0c0c0e);border:.9cqw solid #1b1b1f;box-shadow:0 6cqw 12cqw rgba(0,0,0,.7),0 0 0 .25cqw rgba(255,255,255,.2)}
+.pv-phone::before{content:"";position:absolute;top:1.6cqw;left:50%;width:12cqw;height:3cqw;margin-left:-6cqw;border-radius:2cqw;background:#000;z-index:3}
+.ps{position:absolute;inset:0;border-radius:6cqw;overflow:hidden;background:linear-gradient(180deg,#1b1c21,#0a0a0c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;text-align:center;padding:4cqw}
+.ps-wait{color:#aaa;font-size:3cqw;letter-spacing:.3cqw;text-transform:uppercase}
+.ps-wait b{display:block;width:10cqw;height:10cqw;border-radius:50%;margin:0 auto 2.5cqw;border:.5cqw solid rgba(255,255,255,.35)}
+.ps-done{opacity:0;justify-content:flex-start;padding-top:9cqw}
+.ps-ok{width:9cqw;height:9cqw;border-radius:50%;background:#2fbf71;display:grid;place-items:center;color:#fff;font-size:5.5cqw;font-weight:700;box-shadow:0 0 5cqw rgba(47,191,113,.5)}
+.ps-t{font-size:3.3cqw;font-weight:600;color:#fff;line-height:1.25}
+.ps-p{width:100%;margin-top:1.5cqw;padding:3.5cqw 2.5cqw;border-radius:4cqw;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;align-items:center;gap:1.2cqw}
+.ps-av{width:11cqw;height:11cqw;border-radius:50%;background:linear-gradient(135deg,#bdbdc6,#55555e);display:grid;place-items:center;font-weight:700;font-size:4cqw;color:#111}
+.ps-n{font-size:3.4cqw;font-weight:600;color:#fff}.ps-r{font-size:2.5cqw;color:#a8a8b2}
+.ps-b{margin-top:1cqw;width:100%;padding:2cqw 0;border-radius:3cqw;background:#fff;color:#111;font-size:2.9cqw;font-weight:600}
+.ps-b.g{background:rgba(255,255,255,.12);color:#ddd;border:1px solid rgba(255,255,255,.18)}
+
+/* finale */
+.pv-end{position:absolute;left:0;right:0;top:100cqw;text-align:center;opacity:0;z-index:5;padding:0 8cqw}
+.pv-end .lg{display:inline-block;position:relative;padding:2cqw 0}
+.pv-end .lg img{width:44cqw;height:auto;display:block}
+.pv-end p{margin:3.2cqw 0 0;color:#ddd;font-size:3.5cqw;line-height:1.5;letter-spacing:.1cqw}
+
+/* UI */
+.pv-cut{background:#000;opacity:0;z-index:7}
+.pv-cut.go{animation:cut .5s ease}
+@keyframes cut{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+.pv-bar{position:absolute;left:5cqw;right:5cqw;bottom:3cqw;height:.7cqw;border-radius:1cqw;background:rgba(255,255,255,.14);z-index:8;overflow:hidden}
+.pv-bar i{display:block;height:100%;width:0;background:#fff}
+.pv-replay{position:absolute;right:4cqw;top:4cqw;z-index:8;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;
+  font:500 3cqw var(--font),sans-serif;padding:1.6cqw 3.2cqw;border-radius:99px;cursor:pointer;min-height:9cqw;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pv-tag{position:absolute;left:5cqw;top:5cqw;z-index:8;font-size:2.6cqw;letter-spacing:.5cqw;text-transform:uppercase;color:#cfcfd6;opacity:.85}
+
+/* ---------- SCENE 1: the reveal (0-3.6s) ---------- */
+.pv[data-scene="1"] .pv-beam{animation:beam 3.6s ease-out forwards}
+.pv[data-scene="1"] .pv-smoke{animation:smoke 9s ease-in-out infinite;opacity:.5}
+.pv[data-scene="1"] .pv-smoke.b{animation-delay:-3s}
+.pv[data-scene="1"] .pv-card{opacity:1;animation:c1 3.6s cubic-bezier(.3,.1,.3,1) forwards}
+.pv[data-scene="1"] .pv-flip{transform:rotateY(0)}
+@keyframes beam{0%{opacity:0}35%{opacity:.8}100%{opacity:.5}}
+@keyframes smoke{0%{transform:translate(0,0) scale(1) rotate(0)}50%{transform:translate(6cqw,-5cqw) scale(1.15) rotate(40deg)}100%{transform:translate(0,0) scale(1) rotate(0)}}
+@keyframes c1{0%{transform:translateY(-2cqw) rotateX(52deg) rotateZ(-26deg) scale(.82);filter:brightness(.08)}
+  45%{filter:brightness(.55)}100%{transform:translateY(-6cqw) rotateX(30deg) rotateZ(-14deg) scale(1.08);filter:brightness(1)}}
+
+/* ---------- SCENE 2: hero shots + 360 turn to the QR back (3.6-8s) ---------- */
+.pv[data-scene="2"] .pv-beam{opacity:.25;transform:rotate(-20deg)}
+.pv[data-scene="2"] .pv-smoke{opacity:.25;animation:smoke 9s ease-in-out infinite}
+.pv[data-scene="2"] .pv-card{opacity:1;animation:c2 4.4s cubic-bezier(.45,0,.2,1) forwards}
+.pv[data-scene="2"] .pv-flip{animation:flip 4.4s cubic-bezier(.5,0,.2,1) forwards}
+.pv[data-scene="2"] .pv-sheen::before{animation:sheen 1.6s ease-in-out 1.2s 2}
+@keyframes c2{0%{transform:translate(-20cqw,4cqw) rotateX(14deg) rotateZ(-12deg) scale(2.3)}
+  30%{transform:translate(8cqw,0) rotateX(8deg) rotateZ(-5deg) scale(1.7)}
+  55%{transform:translate(0,-4cqw) rotateX(10deg) rotateZ(-3deg) scale(1.12)}
+  100%{transform:translate(0,-6cqw) rotateX(0) rotateZ(0) scale(1.06)}}
+@keyframes flip{0%,28%{transform:rotateY(0)}78%,100%{transform:rotateY(180deg)}}
+@keyframes sheen{from{left:-40%}to{left:120%}}
+
+/* ---------- SCENE 3: tap to share (8-12.6s) ---------- */
+.pv[data-scene="3"] .pv-floor{opacity:1;animation:fadein .8s both}
+.pv[data-scene="3"] .pv-phone{animation:phone 4.6s ease-out forwards}
+.pv[data-scene="3"] .pv-card{opacity:1;animation:c3 4.6s cubic-bezier(.4,0,.2,1) forwards}
+.pv[data-scene="3"] .pv-flip{transform:rotateY(0)}
+.pv[data-scene="3"] .pv-nfc i{animation:ring 1.6s ease-out 1.5s 2}
+.pv[data-scene="3"] .pv-nfc i:nth-child(2){animation-delay:1.8s}
+.pv[data-scene="3"] .pv-nfc i:nth-child(3){animation-delay:2.1s}
+.pv[data-scene="3"] .ps-wait{animation:fadeout .4s 2.3s forwards}
+.pv[data-scene="3"] .ps-done{animation:fadein .6s 2.4s both}
+@keyframes phone{0%{opacity:0;transform:translateY(14cqw)}18%,100%{opacity:1;transform:translateY(0)}}
+@keyframes c3{0%{opacity:0;transform:translate(-4cqw,-30cqw) rotateX(30deg) rotateZ(-14deg) scale(.5)}
+  22%{opacity:1;transform:translate(0,-26cqw) rotateX(20deg) rotateZ(-6deg) scale(.5)}
+  40%{transform:translate(0,-15cqw) rotateX(10deg) rotateZ(0) scale(.46)}
+  50%{transform:translate(0,-17cqw) rotateX(10deg) rotateZ(0) scale(.46)}
+  72%{opacity:1}100%{opacity:0;transform:translate(0,-40cqw) rotateX(20deg) rotateZ(4deg) scale(.5)}}
+@keyframes ring{0%{opacity:.9;transform:scale(.2)}100%{opacity:0;transform:scale(2.2)}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes fadeout{from{opacity:1}to{opacity:0}}
+
+/* ---------- SCENE 4: premium finale (12.6-17s) ---------- */
+.pv[data-scene="4"] .pv-floor{opacity:1}
+.pv[data-scene="4"] .pv-top{animation:fadein 1.2s both;opacity:1}
+.pv[data-scene="4"] .pv-smoke{opacity:.22;animation:smoke 9s ease-in-out infinite}
+.pv[data-scene="4"] .pv-card{opacity:1;top:34cqw;animation:c4 4.4s ease-out forwards}
+.pv[data-scene="4"] .pv-flip{transform:rotateY(0)}
+.pv[data-scene="4"] .pv-sheen::before{animation:sheen 1.8s ease-in-out .8s 1}
+.pv[data-scene="4"] .pv-end{animation:endin 1.2s ease-out .9s both}
+@keyframes c4{0%{transform:scale(.92);filter:brightness(.55)}100%{transform:scale(1.04);filter:brightness(1)}}
+@keyframes endin{from{opacity:0;transform:translateY(4cqw)}to{opacity:1;transform:translateY(0)}}
+
+/* progress bar per scene length is set by JS (.pv-bar i animation) */
+.pv-bar i.run{animation:bar var(--tot,17s) linear forwards}
+@keyframes bar{from{width:0}to{width:100%}}
+
+@media (max-width:860px){
+  .promo-in{grid-template-columns:minmax(0,1fr);justify-items:center;gap:28px}
+  .promo-copy{text-align:left;width:100%}
+  .pv{width:100%;max-width:380px}
+}
+@media (prefers-reduced-motion:reduce){
+  .pv *{animation:none!important}
+}
