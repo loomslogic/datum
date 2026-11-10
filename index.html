@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="landing.css">
+<link rel="stylesheet" href="promo.css">
 <script>
   // Card links (?u= or ?c=) live at card.html. Old NFC cards that point at index.html keep working.
   (function () {
@@ -76,6 +77,37 @@
       </div>
     </div>
   </header>
+
+  <!-- PROMO (animated commercial, built in code) -->
+  <section class="s promo" id="promo">
+    <div class="container promo-in">
+      <div class="promo-copy">
+        <span class="eyebrow glass">See it in action</span>
+        <h2>Your Digital Business Card. Smarter. Sleeker. Fast Connection.</h2>
+        <p>One tap opens your whole profile on any modern phone. No app, no typing, no lost paper cards.</p>
+        <ul>
+          <li><b>1</b><span>Premium matte NFC card with your DATUM identity</span></li>
+          <li><b>2</b><span>Front for the tap, back with your QR code</span></li>
+          <li><b>3</b><span>Tap a phone and your contact is shared instantly</span></li>
+          <li><b>4</b><span>Fast connection, always up to date</span></li>
+        </ul>
+      </div>
+      <div class="pv" id="pv" data-scene="0" role="img" aria-label="Animated DATUM commercial: the card is revealed, turned to show its QR code, tapped on a phone to share a contact, and ends on the DATUM logo.">
+        <div class="pv-bg"><i class="pv-beam"></i><i class="pv-top"></i><i class="pv-floor"></i><i class="pv-smoke a"></i><i class="pv-smoke b"></i></div>
+        <div class="pv-dust" id="pvDust"></div>
+        <div class="pv-phone"><div class="ps ps-wait"><b></b>Hold near card</div><div class="ps ps-done"><div class="ps-ok">&#10003;</div><div class="ps-t">Contact Shared<br>Successfully</div><div class="ps-p"><div class="ps-av">YN</div><div class="ps-n">Your Name</div><div class="ps-r">Student | Founder | Creator</div><div class="ps-b">Save Contact</div><div class="ps-b g">Visit Profile</div></div></div></div>
+        <div class="pv-nfc"><i></i><i></i><i></i></div>
+        <div class="pv-card"><div class="pv-flip">
+          <div class="pv-face front"><svg class="n1" viewBox="0 0 120 80" fill="none" stroke="#fff" stroke-width=".7"><path d="M120 0 100 14 112 34 84 30 100 14M84 30 96 52 112 34M96 52 120 60M84 30 66 40 72 18 100 14M66 40 80 62 96 52"/><g fill="#fff" stroke="none"><circle cx="100" cy="14" r="1.6"/><circle cx="112" cy="34" r="1.6"/><circle cx="84" cy="30" r="1.6"/><circle cx="96" cy="52" r="1.6"/><circle cx="66" cy="40" r="1.6"/><circle cx="72" cy="18" r="1.6"/></g></svg><svg class="n2" viewBox="0 0 120 80" fill="none" stroke="#fff" stroke-width=".7"><path d="M120 0 100 14 112 34 84 30 100 14M84 30 96 52 112 34M96 52 120 60M84 30 66 40 72 18 100 14M66 40 80 62 96 52"/><g fill="#fff" stroke="none"><circle cx="100" cy="14" r="1.6"/><circle cx="112" cy="34" r="1.6"/><circle cx="84" cy="30" r="1.6"/><circle cx="96" cy="52" r="1.6"/><circle cx="66" cy="40" r="1.6"/><circle cx="72" cy="18" r="1.6"/></g></svg><img class="cl" src="logo.png" alt="DATUM"></div>
+          <div class="pv-face back"><img src="qr.png" alt="DATUM QR code"></div>
+        </div><div class="pv-sheen"></div></div>
+        <div class="pv-end"><div class="lg"><img src="logo.png" alt="DATUM"></div><p>Your Digital Business Card.<br>Smarter. Sleeker. Fast Connection</p></div>
+        <div class="pv-vig"></div><div class="pv-cut"></div>
+        <button class="pv-replay" type="button">Replay</button>
+        <div class="pv-bar"><i></i></div>
+      </div>
+    </div>
+  </section>
 
   <!-- GOAL -->
   <section class="s" id="goal">
@@ -206,5 +238,6 @@
     els.forEach(function (el) { io.observe(el); });
   })();
 </script>
+<script src="promo.js" defer></script>
 </body>
 </html>
