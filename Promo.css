@@ -144,10 +144,27 @@
 .pv-bar i.run{animation:bar var(--tot,17s) linear forwards}
 @keyframes bar{from{width:0}to{width:100%}}
 
+/* ---------- phone / tablet layout ---------- */
+.nav .pill,.navlinks a{white-space:nowrap}
+@media (max-width:900px){
+  .navlinks a.t{display:none}                 /* keep logo + Log in + Get your card on one line */
+  .navlinks a.t[href*="dashboard"]{display:inline-flex}
+  .nav .container{gap:10px}
+}
 @media (max-width:860px){
-  .promo-in{grid-template-columns:minmax(0,1fr);justify-items:center;gap:28px}
-  .promo-copy{text-align:left;width:100%}
-  .pv{width:100%;max-width:380px}
+  .promo-in{grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+  .promo-copy h2{font-size:clamp(24px,4.6vw,32px)}
+  .promo-copy p,.promo-copy ul{max-width:none}
+  .pv{max-width:280px;border-radius:22px}
+}
+@media (max-width:600px){
+  .promo-in{grid-template-columns:minmax(0,1fr);gap:22px;justify-items:stretch}
+  .pv{width:100%;max-width:min(100%,330px);margin:0 auto}
+  .promo-copy h2{font-size:26px;letter-spacing:-.6px}
+  .promo-copy p{font-size:15px}
+  .promo-copy li{font-size:14px}
+  .nav .pill{padding:9px 14px;font-size:13px}
+  .nav .logo img{height:19px}
 }
 @media (prefers-reduced-motion:reduce){
   .pv *{animation:none!important}
