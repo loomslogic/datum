@@ -253,30 +253,59 @@ export const Store = {
     r.setProperty('--blur', 'blur(' + (d.blur == null ? 22 : d.blur) + 'px) saturate(160%)');
     r.setProperty('--font', "'" + (d.font || 'Outfit') + "'");
   },
-  // resize + compress an image file to a data URL that fits Firestore's 1MB document limit
-  fileToDataURL: function (file, max, startQ) {
+  // Shrink an uploaded picture so it looks the same on a phone but weighs far less.
+  //  - a small file that is already within the size limit is kept untouched (no quality loss)
+  //  - otherwise it is resized (smooth, high quality) and re-encoded, lowering quality only as far as needed
+  //  - transparent PNGs stay PNG; everything else becomes WebP (or JPEG where WebP is unsupported)
+  // max = longest side in px, startQ = first quality tried, targetKB = size to aim for (hard cap stays ~600KB)
+  fileToDataURL: function (file, max, startQ, targetKB) {
+    var HARD = 800000;                               // database limit per picture (characters of the data URL)
+    var target = Math.min(HARD, Math.round((targetKB || 220) * 1024 * 4 / 3));
+    max = max || 1280; startQ = startQ || 0.86;
+    var webp = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
     return new Promise(function (res, rej) {
-      var fr = new FileReader(); fr.onerror = rej;
-      fr.onload = function () {
-        var img = new Image(); img.onerror = rej;
-        img.onload = function () {
-          var size = max || 800, q = startQ || 0.8, out;
-          for (var i = 0; i < 6; i++) {
-            var s = Math.min(1, size / Math.max(img.width, img.height));
-            var c = document.createElement('canvas');
-            c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-            var png = file.type === 'image/png';
-            out = c.toDataURL(png ? 'image/png' : 'image/jpeg', q);
-            if (out.length < 800000) return res(out);
-            size = Math.round(size * 0.8); q = Math.max(0.5, q - 0.1);
-            if (png && i === 1) file = { type: 'image/jpeg' }; // huge PNG: fall back to JPEG
-          }
-          rej(new Error('Image too large'));
-        };
-        img.src = fr.result;
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Not an image')); };
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+        var ok = /^image\/(jpeg|png|webp)$/.test(file.type);
+        // 1) already small enough: keep the original bytes, nothing is lost
+        if (ok && file.size * 4 / 3 <= target && Math.max(W, H) <= max) {
+          var fr = new FileReader(); fr.onerror = rej;
+          fr.onload = function () { res(fr.result); };
+          return fr.readAsDataURL(file);
+        }
+        function draw(size) {
+          var s = Math.min(1, size / Math.max(W, H));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(W * s)); c.height = Math.max(1, Math.round(H * s));
+          var x = c.getContext('2d');
+          x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+          x.drawImage(img, 0, 0, c.width, c.height);
+          return c;
+        }
+        var size = max, c = draw(size), alpha = false;
+        if (file.type !== 'image/jpeg') {              // only PNG/WebP/GIF can have see-through pixels
+          try {
+            var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+            for (var p = 3; p < d.length; p += 4) { if (d[p] < 250) { alpha = true; break; } }
+          } catch (e) { alpha = file.type === 'image/png'; }
+        }
+        var mime = alpha ? 'image/png' : (webp ? 'image/webp' : 'image/jpeg');
+        if (alpha) target = Math.min(HARD, target * 2);   // see-through PNGs cannot be lossy, so allow a bit more room
+        var q = startQ, out = '', best = '';
+        for (var i = 0; i < 10; i++) {
+          out = c.toDataURL(mime, q);
+          if (!best || out.length < best.length) best = out;
+          if (out.length <= target) return res(out);
+          if (!alpha && q > 0.66) { q = Math.max(0.66, q - 0.06); }          // 1st: lower quality a little
+          else { size = Math.round(size * 0.85); c = draw(size); q = Math.max(0.7, startQ - 0.06); }  // then: a bit smaller
+        }
+        if (best.length <= HARD) return res(best);
+        rej(new Error('Image too large'));
       };
-      fr.readAsDataURL(file);
+      img.src = url;
     });
   }
 };
