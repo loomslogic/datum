@@ -365,7 +365,7 @@ function bindUploads() {
     var f = this.files[0]; if (!f) return;
     try {
       setSaved('Uploading photo...');
-      var data = await Store.fileToDataURL(f, 800);
+      var data = await Store.fileToDataURL(f, 900, 0.9, 200);
       var id = await Store.addPhoto(username, data);
       var old = card.avatarId;
       card.photos[id] = data; card.avatarId = id;
@@ -378,7 +378,7 @@ function bindUploads() {
       var f = this.files[0], i = +this.dataset.qr; if (!f) return;
       try {
         setSaved('Uploading QR code...');
-        var data = await Store.fileToDataURL(f, 900, 0.95);
+        var data = await Store.fileToDataURL(f, 1000, 0.95, 150);
         var id = await Store.addPhoto(username, data);
         var w = card.wallets[i], old = w.qrId;
         card.photos[id] = data; w.qrId = id;
@@ -391,7 +391,7 @@ function bindUploads() {
     var f = this.files[0]; if (!f) return;
     try {
       setSaved('Uploading background...');
-      var data = await Store.fileToDataURL(f, 1200);
+      var data = await Store.fileToDataURL(f, 1400, 0.85, 300);
       var id = await Store.addPhoto(username, data);
       var old = card.bgId;
       card.photos[id] = data; card.bgId = id;
@@ -406,7 +406,7 @@ function bindUploads() {
       if (card.galleryIds.length >= MAX_GALLERY) { setSaved('Gallery is full (' + MAX_GALLERY + ' photos).', true); break; }
       try {
         setSaved('Uploading photo...');
-        var data = await Store.fileToDataURL(f, 800);
+        var data = await Store.fileToDataURL(f, 1280, 0.86, 220);
         var id = await Store.addPhoto(username, data);
         card.photos[id] = data; card.galleryIds.push(id);
       } catch (e) { setSaved('One photo could not be uploaded.', true); }
