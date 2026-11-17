@@ -126,8 +126,12 @@ function renderTab() {
       '<div class="h">Contact</div><div class="row2">' + field('Phone', 'phone', { type: 'tel' }) + field('Email', 'email', { type: 'email' }) + '</div>' +
       check('Show phone / email text on the card (otherwise only "Tap to call")', 'showPhone');
   } else if (tab === 'photos') {
-    var av = ph[card.avatarId];
-    h += '<div class="card"><h4>Profile photo</h4>' +
+    var av = ph[card.avatarId], cv = ph[card.coverId];
+    h += '<div class="card"><h4>Cover picture (behind your profile photo)</h4>' +
+      (cv ? '<img src="' + esc(cv) + '" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.16)">' : '<p class="note">No cover picture yet. It shows behind your profile photo at the top of your card.</p>') +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="mini upl">' + (cv ? 'Change cover' : 'Upload cover') + '<input type="file" accept="image/*" id="upCov"></label>' +
+      (cv ? '<button class="mini danger" data-act="rmcov">Remove</button>' : '') + '</div></div>' +
+      '<div class="card"><h4>Profile photo</h4>' +
       (av ? '<img class="avprev" src="' + esc(av) + '" alt="">' : '<div class="avprev">' + esc((card.name || '?')[0]) + '</div>') +
       '<p class="note">Tip: a PNG with a transparent background looks best in the hero.</p>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="mini upl">Upload photo<input type="file" accept="image/*" id="upAv"></label>' +
@@ -258,6 +262,7 @@ $('#tabBody').addEventListener('click', async function (e) {
   else if (act === 'rmqr') { var wq = card.wallets[i], oq = wq.qrId; wq.qrId = ''; queueSave(); renderTab(); if (oq) await Store.deletePhoto(username, oq); }
   else if (act === 'theme') { card.design.theme = b.dataset.k; Store.applyDesign(card.design); queueSave(); renderTab(); }
   else if (act === 'rmav') { var old = card.avatarId; card.avatarId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, old); }
+  else if (act === 'rmcov') { var oc = card.coverId; card.coverId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, oc); }
   else if (act === 'rmg') { var gid = card.galleryIds.splice(i, 1)[0]; queueSave(); renderTab(); await Store.deletePhoto(username, gid); }
   else if (act === 'bgcolor') { card.design.bgColor = ''; Store.applyDesign(card.design); queueSave(); renderTab(); }
   else if (act === 'rmbg') { var ob = card.bgId; card.bgId = ''; queueSave(); renderTab(); await Store.deletePhoto(username, ob); }
@@ -278,7 +283,7 @@ $('#tabBody').addEventListener('click', async function (e) {
     var inp = $('#shareUrl'); inp.select();
     (navigator.clipboard ? navigator.clipboard.writeText(inp.value) : Promise.resolve(document.execCommand('copy'))).then(function () { b.textContent = 'Copied!'; });
   } else if (act === 'export') {
-    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.publicId; delete copy.avatarId; delete copy.bgId; delete copy.galleryIds;
+    var copy = JSON.parse(JSON.stringify(card)); delete copy.photos; delete copy.ownerUid; delete copy.id; delete copy.publicId; delete copy.avatarId; delete copy.coverId; delete copy.bgId; delete copy.galleryIds;
     copy.wallets = (copy.wallets || []).map(function (w) { return Object.assign({}, w, { qrId: '' }); });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' }));
@@ -360,7 +365,7 @@ async function loadModList() {
 function setSaved(msg, err) { var s = $('#saved'); s.textContent = msg; s.classList.toggle('err', !!err); }
 
 function bindUploads() {
-  var av = $('#upAv'), gal = $('#upGal'), imp = $('#upImp'), bgu = $('#upBg');
+  var av = $('#upAv'), gal = $('#upGal'), imp = $('#upImp'), bgu = $('#upBg'), cov = $('#upCov');
   if (av) av.onchange = async function () {
     var f = this.files[0]; if (!f) return;
     try {
@@ -387,6 +392,18 @@ function bindUploads() {
       } catch (e) { setSaved('Could not upload that QR code.', true); }
     };
   });
+  if (cov) cov.onchange = async function () {
+    var f = this.files[0]; if (!f) return;
+    try {
+      setSaved('Uploading cover...');
+      var data = await Store.fileToDataURL(f, 1400, 0.85, 300);
+      var id = await Store.addPhoto(username, data);
+      var old = card.coverId;
+      card.photos[id] = data; card.coverId = id;
+      queueSave(); renderTab();
+      if (old) Store.deletePhoto(username, old);
+    } catch (e) { setSaved('Could not upload that cover picture.', true); }
+  };
   if (bgu) bgu.onchange = async function () {
     var f = this.files[0]; if (!f) return;
     try {
