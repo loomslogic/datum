@@ -195,6 +195,17 @@ footer{text-align:center;padding:30px 20px 40px;font-size:12px;color:var(--muted
 .wnum{font-size:20px;font-weight:600;letter-spacing:1px;word-break:break-all;user-select:all}
 .wbox .btn{width:100%;margin-top:4px}
 
+/* cover picture behind the profile photo (inside the hero, fades out at the bottom so there is no seam) */
+.cover{position:absolute;inset:0;z-index:0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;animation:coverIn 1.2s ease backwards}
+.cover::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.25),rgba(0,0,0,.45))}
+.hero.hascover .bigword{z-index:1}
+.hero.hascover .avatar{z-index:2}
+.hero.hascover .avatar.round{z-index:3}
+@keyframes coverIn{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
+.static .cover img{animation:none!important}
+
 /* custom background picture */
 .bgimg{position:absolute;inset:-24px;background-size:cover;background-position:center}
 .hasbg .orb{display:none}
