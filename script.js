@@ -93,15 +93,18 @@ function render(c) {
   if (c.chips && c.chips.length) h += '<div class="chips">' + c.chips.map(function (x) { return '<span class="chip">' + esc(x) + '</span>'; }).join('') + '</div>';
   h += '</div>';
 
-  var det = '';
-  if (c.phone) det += '<a class="detail" href="tel:' + esc(c.phone) + '">' + phoneSvg + '<small>Phone</small><span>' + (c.showPhone ? esc(c.phone) : 'Tap to call') + '</span></a>';
-  if (c.email) det += '<a class="detail" href="mailto:' + esc(c.email) + '">' + mailSvg + '<small>Email</small><span>' + (c.showPhone ? esc(c.email) : 'Send email') + '</span></a>';
-  if (c.links && c.links.length) det += '<a class="detail" href="#links">' + globeSvg + '<small>Profile</small><span>Visit links</span></a>';
-  if (det) h += '<section class="fade d2"><div class="label">Details</div><div class="details">' + det + '</div></section>';
-
+  // Quick Actions first (this replaces the old, repeated "Details" tiles)
   var act = '<button class="btn" id="saveContact">' + userAdd + 'Save contact</button>';
-  if (c.phone) act += '<a class="btn" href="tel:' + esc(c.phone) + '">' + phoneSvg + 'Call me</a><a class="btn" href="sms:' + esc(c.phone) + '">' + chatSvg + 'Text / SMS</a>';
-  h += '<section class="fade d3"><div class="label">Quick Actions</div><div class="actions">' + act + '</div></section>';
+  if (c.phone) act += '<a class="btn" href="tel:' + esc(c.phone) + '">' + phoneSvg + 'Call me' + (c.showPhone ? ' <small class="bn">' + esc(c.phone) + '</small>' : '') + '</a><a class="btn" href="sms:' + esc(c.phone) + '">' + chatSvg + 'Text / SMS</a>';
+  if (c.email) act += '<a class="btn" href="mailto:' + esc(c.email) + '">' + mailSvg + 'Email me' + (c.showPhone ? ' <small class="bn">' + esc(c.email) + '</small>' : '') + '</a>';
+  h += '<section class="fade d2"><div class="label">Quick Actions</div><div class="actions">' + act + '</div></section>';
+
+  // Social Media & Links right below, so visitors do not have to scroll to find them
+  if (c.links && c.links.length) {
+    h += '<section class="fade d3"><div class="label" id="links">Social Media &amp; Links</div><div class="links">' + c.links.map(function (l) {
+      return '<a class="link" href="' + esc(safeUrl(l.url)) + '" target="_blank" rel="noopener"><div class="ic">' + (ICONS[l.type] || ICONS.website) + '</div><div><b>' + esc(l.label) + '</b><small>' + esc(l.sub) + '</small></div></a>';
+    }).join('') + '</div></section>';
+  }
 
   h += '<section class="fade d4">';
   function items(title, arr) {
@@ -119,11 +122,6 @@ function render(c) {
     h += '<div class="label">E-Wallets &amp; Payments</div><div class="links">' + (c.wallets || []).map(function (w, i) {
       if (!w || !(w.number || w.qrId)) return '';
       return '<button type="button" class="link wallet" data-w="' + i + '"><div class="ic">' + walletSvg + '</div><div><b>' + esc(w.label || 'E-Wallet') + '</b><small>' + esc(w.name || 'Tap to pay') + '</small></div></button>';
-    }).join('') + '</div>';
-  }
-  if (c.links && c.links.length) {
-    h += '<div class="label" id="links">Social Media &amp; Links</div><div class="links">' + c.links.map(function (l) {
-      return '<a class="link" href="' + esc(safeUrl(l.url)) + '" target="_blank" rel="noopener"><div class="ic">' + (ICONS[l.type] || ICONS.website) + '</div><div><b>' + esc(l.label) + '</b><small>' + esc(l.sub) + '</small></div></a>';
     }).join('') + '</div>';
   }
   h += '</section><footer>&copy; ' + new Date().getFullYear() + ' ' + LOGO + '</footer>';
