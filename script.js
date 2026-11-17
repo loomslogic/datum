@@ -83,8 +83,9 @@ function render(c) {
   var h = '';
   var av = safeImg(ph[c.avatarId]);
   var isPng = /^data:image\/png/.test(av);
+  var cover = safeImg(ph[c.coverId]);
 
-  h += '<header class="hero">' + (d.bigword !== false && d.bigwordText ? '<div class="bigword" style="--bw:' + bigwordSize(d.bigwordText) + 'px">' + esc(d.bigwordText) + '</div>' : '') +
+  h += '<header class="hero' + (cover ? ' hascover' : '') + '">' + (cover ? '<div class="cover"><img src="' + esc(cover) + '" alt=""></div>' : '') + (d.bigword !== false && d.bigwordText ? '<div class="bigword" style="--bw:' + bigwordSize(d.bigwordText) + 'px">' + esc(d.bigwordText) + '</div>' : '') +
     '<div class="avatar' + (av && !isPng ? ' round' : '') + '" id="avatar">' + (av ? '<img src="' + esc(av) + '" alt="' + esc(c.name) + '">' : esc(initials(c.name))) + '</div></header>';
 
   h += '<div class="head fade d1"><h1>' + esc(c.name) + '</h1><div class="role">' + esc(c.role) + '</div>' +
