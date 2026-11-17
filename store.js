@@ -18,7 +18,7 @@ const FONTS = ['Outfit', 'Inter', 'Poppins', 'Space Grotesk', 'Playfair Display'
 function blankCard(ownerUid) {
   return {
     ownerUid: ownerUid, name: 'Your Name', role: 'Your title | Your role', bio: 'Write a short intro about yourself here.',
-    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', bgId: '', galleryIds: [],
+    location: '', chips: [], phone: '', showPhone: false, email: '', avatarId: '', coverId: '', bgId: '', galleryIds: [],
     experience: [], education: [], skills: [], links: [], wallets: [],
     design: { theme: 'graphite', accent: '#ffffff', font: 'Outfit', blur: 22, bigword: true, bigwordText: 'HELLO', bgColor: '', bgDim: 35, bgBlur: 0 }
   };
@@ -86,7 +86,7 @@ async function loadCard(name) {
   if (!r.data) return null;
   var c = Object.assign(blankCard(''), r.data.data);
   c.id = r.data.username; c.ownerUid = r.data.owner_uid; c.publicId = r.data.public_id || ''; c.photos = {};
-  var ids = [c.avatarId, c.bgId].concat(c.galleryIds || [], (c.wallets || []).map(function (w) { return w && w.qrId; })).filter(Boolean);
+  var ids = [c.avatarId, c.coverId, c.bgId].concat(c.galleryIds || [], (c.wallets || []).map(function (w) { return w && w.qrId; })).filter(Boolean);
   if (ids.length) {
     var p = await sb.from('photos').select('id, data').in('id', ids);
     if (p.error) throw p.error;
