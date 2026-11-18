@@ -93,11 +93,13 @@ function render(c) {
   if (c.chips && c.chips.length) h += '<div class="chips">' + c.chips.map(function (x) { return '<span class="chip">' + esc(x) + '</span>'; }).join('') + '</div>';
   h += '</div>';
 
-  // Quick Actions first (this replaces the old, repeated "Details" tiles)
-  var act = '<button class="btn" id="saveContact">' + userAdd + 'Save contact</button>';
-  if (c.phone) act += '<a class="btn" href="tel:' + esc(c.phone) + '">' + phoneSvg + 'Call me' + (c.showPhone ? ' <small class="bn">' + esc(c.phone) + '</small>' : '') + '</a><a class="btn" href="sms:' + esc(c.phone) + '">' + chatSvg + 'Text / SMS</a>';
-  if (c.email) act += '<a class="btn" href="mailto:' + esc(c.email) + '">' + mailSvg + 'Email me' + (c.showPhone ? ' <small class="bn">' + esc(c.email) + '</small>' : '') + '</a>';
-  h += '<section class="fade d2"><div class="label">Quick Actions</div><div class="actions">' + act + '</div></section>';
+  // Quick Actions: square tiles (different from the wide link rows below, so the two blocks do not look the same)
+  var acts = ['<button class="btn" id="saveContact">' + userAdd + '<span>Save</span></button>'];
+  if (c.phone) acts.push('<a class="btn" href="tel:' + esc(c.phone) + '">' + phoneSvg + '<span>Call</span></a>', '<a class="btn" href="sms:' + esc(c.phone) + '">' + chatSvg + '<span>Text</span></a>');
+  if (c.email) acts.push('<a class="btn" href="mailto:' + esc(c.email) + '">' + mailSvg + '<span>Email</span></a>');
+  var shown = c.showPhone ? [c.phone, c.email].filter(Boolean).map(esc).join(' &middot; ') : '';
+  h += '<section class="fade d2"><div class="label">Quick Actions</div><div class="actions sq" style="--n:' + Math.min(acts.length, 4) + '">' + acts.join('') + '</div>' +
+    (shown ? '<p class="shown">' + shown + '</p>' : '') + '</section>';
 
   // Social Media & Links right below, so visitors do not have to scroll to find them
   if (c.links && c.links.length) {
