@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------
+# DATUM Digital Cards: keep private data out of GitHub
+# NOTE: .gitignore only affects files NOT yet committed. A file that is
+# already on GitHub stays visible (and in history) until you delete it there.
+# ---------------------------------------------------------------
+
+# Secrets and keys (the Supabase SERVICE ROLE key must never be in the repo)
+.env
+.env.*
+*.env
+secrets.*
+*.pem
+*.key
+*.p12
+service-account*.json
+*service_role*
+*secret*
+
+# Supabase CLI local files (can hold project tokens and database passwords)
+supabase/.temp/
+supabase/.branches/
+supabase/.env*
+.supabase/
+
+# Customer and account data
+backup*.json
+*-backup.json
+datum-card-*.json
+exports/
+customers*
+clients*
+*.csv
+*.xlsx
+*.xls
+
+# Private admin notes and one-off SQL that contains real moderator emails
+add_moderator.sql
+set_moderators.sql
+supabase/add_moderator.sql
+supabase/set_moderators.sql
+notes-private/
+*.private.*
+
+# Packaged copies and large unused files
+*.zip
+12354.png
+
+# Editor, tool and system files
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
+.vscode/
+.idea/
+*.log
+.claude/
+.cache/
