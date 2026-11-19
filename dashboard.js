@@ -50,7 +50,7 @@ function openEditor(c) {
   Store.isModerator().then(function (m) {
     var nav = $('#tabs'), ex = nav.querySelector('[data-t=mod]');
     if (ex) ex.remove();
-    if (m) { var b = document.createElement('button'); b.dataset.t = 'mod'; b.textContent = 'Moderator'; nav.appendChild(b); }
+    if (m) { var b = document.createElement('button'); b.dataset.t = 'mod'; b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Admin</span>'; nav.appendChild(b); }
   });
 }
 
@@ -103,6 +103,7 @@ $('#tabs').addEventListener('click', function (e) {
   tab = b.dataset.t;
   this.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
   renderTab();
+  window.scrollTo(0, 0);
 });
 
 var LINK_TYPES = ['facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'messenger', 'telegram', 'whatsapp', 'viber', 'map', 'github', 'portfolio', 'website', 'other'];
