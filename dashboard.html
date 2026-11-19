@@ -46,6 +46,16 @@
 
 <!-- EDITOR -->
 <div class="dash" id="editor" hidden>
+  <nav class="tabs" id="tabs" aria-label="Dashboard sections">
+        <button data-t="profile" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Profile</span></button>
+        <button data-t="photos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/></svg><span>Photos</span></button>
+        <button data-t="links"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg><span>Links</span></button>
+        <button data-t="resume"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg><span>Resume</span></button>
+        <button data-t="wallets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h12v4"/><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="16.5" cy="13.5" r="1.2"/></svg><span>E-Wallets</span></button>
+        <button data-t="design"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.6-2.1-.4-1.2.3-2.4 1.6-2.4H18a3 3 0 0 0 3-3C21 7 17 3 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/></svg><span>Design</span></button>
+        <button data-t="share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.6M8.2 13.2l7.6 4.6"/></svg><span>Share</span></button>
+        <button data-t="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6-3 2 2"/></svg><span>Account</span></button>
+      </nav>
   <header class="topbar panel">
     <div><b id="who">@id</b><small>Dashboard</small></div>
     <div class="topbtns">
@@ -57,16 +67,6 @@
 
   <div class="cols">
     <section class="edit panel" id="editPane">
-      <nav class="tabs" id="tabs">
-        <button data-t="profile" class="on">Profile</button>
-        <button data-t="photos">Photos</button>
-        <button data-t="links">Links</button>
-        <button data-t="resume">Resume</button>
-        <button data-t="wallets">E-Wallets</button>
-        <button data-t="design">Design</button>
-        <button data-t="share">Share</button>
-        <button data-t="account">Account</button>
-      </nav>
       <div id="tabBody"></div>
       <div class="saved" id="saved">All changes saved</div>
     </section>
@@ -77,6 +77,21 @@
   </div>
 </div>
 
+<script>
+  /* If the dashboard is still "Loading..." after 8 seconds, show why. */
+  (function () {
+    var errs = [];
+    window.addEventListener('error', function (e) { errs.push((e.message || 'script error') + (e.filename ? ' @ ' + e.filename.split('/').pop() + ':' + e.lineno : '')); });
+    window.addEventListener('unhandledrejection', function (e) { errs.push('promise: ' + (e.reason && e.reason.message || e.reason)); });
+    setTimeout(function () {
+      var l = document.getElementById('loading');
+      if (!l || l.hidden) return;
+      var p = l.querySelector('.sub');
+      p.innerHTML = 'Still loading. Try clearing the site cache or opening this page in a private tab.<br><br><small>' +
+        (errs.length ? errs.join('<br>').replace(/</g, '&lt;') : 'No script error. Check your internet connection and the Supabase project.') + '</small>';
+    }, 8000);
+  })();
+</script>
 <script type="module" src="dashboard.js"></script>
 </body>
 </html>
