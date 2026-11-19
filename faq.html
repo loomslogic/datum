@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0b0d">
+<title>FAQ | DATUM</title>
+<meta name="description" content="Answers to common questions about DATUM NFC digital business cards.">
+<meta property="og:title" content="FAQ | DATUM">
+<meta property="og:description" content="NFC digital business cards. One tap opens your whole profile.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="landing.css">
+<link rel="stylesheet" href="promo.css">
+<body class="landing">
+<div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
+
+<div class="lp">
+  <nav class="nav">
+    <div class="container">
+      <a class="logo" href="index.html" aria-label="DATUM home"><img src="logo.png" alt="DATUM"></a>
+      <div class="navlinks">
+        <a class="t" href="index.html#goal">Goal</a>
+        <a class="t" href="index.html#features">Features</a>
+        <a class="t" href="index.html#how">How it works</a>
+        <a class="t on" href="faq.html" aria-current="page">FAQ</a>
+        <a class="t" href="dashboard.html">Log in</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="s" style="padding-top:56px">
+    <div class="container">
+      <div class="rv">
+        <div class="kicker">FAQ</div>
+        <h1 class="title">Frequently asked questions.</h1>
+      </div>
+      <h3 class="fgroup rv">Getting started</h3>
+      <div class="faq">
+        <details class="glass rv"><summary>How do I get a card?</summary><p>Contact DATUM using the Get your card button. A moderator will set up your account and card, and you can then edit it yourself anytime.</p></details>
+        <details class="glass rv"><summary>Do the people I share it with need an account or app?</summary><p>No. Your card is a normal web page, so anyone can open it in their phone browser.</p></details>
+        <details class="glass rv"><summary>Does it work with NFC cards and QR codes?</summary><p>Yes. Tap an NFC card or scan your QR code and your card opens in the phone browser. Most modern phones can read NFC.</p></details>
+        <details class="glass rv"><summary>What if a phone cannot read NFC?</summary><p>Share your card link or QR code instead. The same card opens either way.</p></details>
+      </div>
+      <h3 class="fgroup rv">Your card</h3>
+      <div class="faq">
+        <details class="glass rv"><summary>Who can edit my card?</summary><p>Only you, after logging in. Accounts are created by DATUM moderators, and visitors can only view a card.</p></details>
+        <details class="glass rv"><summary>Can I change my User ID later?</summary><p>Yes, in Account settings. Your permanent NFC link never changes, so your card keeps working. Only the older name-based link changes.</p></details>
+        <details class="glass rv"><summary>Can I hide my phone number and email?</summary><p>Yes. By default the card only shows Call, Text and Email buttons. You can choose to show the actual details in the dashboard.</p></details>
+        <details class="glass rv"><summary>What can I put on my card?</summary><p>Your photo and cover picture, bio, contact buttons, social media and other links, experience, education, skills, a photo gallery and e-wallet QR codes such as GCash.</p></details>
+        <details class="glass rv"><summary>Do my changes show right away?</summary><p>Yes. Save in the dashboard and your card is updated for everyone who opens it. Nothing needs to be reprinted.</p></details>
+      </div>
+      <h3 class="fgroup rv">Privacy and safety</h3>
+      <div class="faq">
+        <details class="glass rv"><summary>Is my information safe?</summary><p>Your card only shows what you choose to put on it. Only you can edit it after logging in, and passwords are never visible to anyone, including moderators.</p></details>
+        <details class="glass rv"><summary>What if I forget my password?</summary><p>Use Forgot password on the login page, or ask a DATUM moderator to reset it for you.</p></details>
+      </div>
+
+      <div class="final glass rv" style="margin-top:44px">
+        <h2>Still have a question?</h2>
+        <p>Message us and we will get back to you.</p>
+        <div class="cta">
+          <a class="pill big" href="mailto:argiebendanillo987@gmail.com?subject=I%20want%20a%20DATUM%20card&body=I%20want%20to%20avail%20the%20card%20here%27s%20my%20Facebook%20account%3A%20%5BFacebook%20name%5D">Get your card</a>
+          <a class="pill big ghost" href="index.html">Back to home</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="lf">
+    <div class="container">
+      <div><img class="flogo" src="logo.png" alt="DATUM"> &copy; <span id="yr"></span> All rights reserved.</div>
+      <div><a href="index.html#goal">Goal</a><a href="index.html#features">Features</a><a href="index.html#how">How it works</a><a href="dashboard.html">Log in</a></div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  (function () {
+    var els = document.querySelectorAll('.rv');
+    if (!('IntersectionObserver' in window)) { document.documentElement.classList.add('noanim'); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.05 });
+    els.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+</body>
+</html>
