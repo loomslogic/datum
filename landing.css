@@ -54,7 +54,7 @@ body.landing{display:block;overflow-x:hidden}
 /* SECTIONS */
 section.s{padding:72px 0}
 .kicker{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#b9b9c2}
-h2.title{font-size:clamp(28px,4.2vw,42px);letter-spacing:-1px;line-height:1.1;margin-top:10px;font-weight:700;max-width:640px}
+h1.title,h2.title{font-size:clamp(28px,4.2vw,42px);letter-spacing:-1px;line-height:1.1;margin-top:10px;font-weight:700;max-width:640px}
 p.sub2{color:#c0c0c8;line-height:1.65;margin-top:14px;max-width:620px;font-size:16px}
 
 /* GOAL */
@@ -139,3 +139,7 @@ html.noanim .rv{opacity:1;transform:none}
 /* logo image */
 .logo img{height:22px;width:auto;display:block}
 footer.lf .flogo{height:14px;width:auto;vertical-align:middle;margin-right:8px;opacity:.9}
+
+/* FAQ PAGE */
+.fgroup{margin:36px 0 -10px;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#b9b9c2}
+.navlinks a.t.on{color:#fff}
