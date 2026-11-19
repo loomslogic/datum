@@ -194,9 +194,6 @@ function renderTab() {
       '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="copy">Copy link</button><a class="mini" href="' + esc(url) + '" target="_blank" rel="noopener">Open card</a></div>' +
       '<p class="note">This link never changes, even if the User ID changes. Anyone with it can view your card. Only you, logged in, can edit it.</p>' +
       '<p class="note">Name link (changes if the User ID changes): ' + esc(url2) + '</p></div>' +
-      '<div class="card"><h4>QR code</h4><canvas id="qrCv" class="qrcv" width="300" height="300"></canvas>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="qrdl" data-url="' + esc(url) + '" data-name="' + esc(username) + '">Download QR (PNG)</button></div>' +
-      '<p class="note">Scan it to open your card. It has the DATUM logo in the middle and uses your permanent link, so it never goes out of date.</p></div>' +
       '<div class="card"><h4>Backup</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export">Download backup (.json)</button>' +
       '<label class="mini upl">Restore backup<input type="file" accept="application/json" id="upImp"></label></div>' +
       '<p class="note">Backups contain your text and design, not photos.</p></div>';
@@ -235,7 +232,6 @@ function renderTab() {
   $('#tabBody').innerHTML = h;
   bindUploads();
   if (tab === 'mod') loadModList();
-  if (tab === 'share') drawQR($('#qrCv'), new URL(cardLink(), location.href).href, { size: 600 }).catch(function () {});
 }
 
 /* ---------- input handling ---------- */
@@ -282,9 +278,9 @@ $('#tabBody').addEventListener('click', async function (e) {
     var cu = new URL('card.html?c=' + b.dataset.pid, location.href).href;
     (navigator.clipboard ? navigator.clipboard.writeText(cu) : Promise.resolve()).then(function () { b.textContent = 'Copied!'; });
   }
-  else if (act === 'qrdl' || act === 'qrmod') {
-    var qu = act === 'qrdl' ? b.dataset.url : new URL('card.html?c=' + b.dataset.pid, location.href).href;
-    var qn = act === 'qrdl' ? b.dataset.name : b.dataset.u, cv = document.createElement('canvas');
+  else if (act === 'qrmod') {
+    var qu = new URL('card.html?c=' + b.dataset.pid, location.href).href;
+    var qn = b.dataset.u, cv = document.createElement('canvas');
     await drawQR(cv, qu, { size: 1200 });
     cv.toBlob(function (bl) {
       var a2 = document.createElement('a'); a2.href = URL.createObjectURL(bl); a2.download = 'datum-qr-' + qn + '.png';
